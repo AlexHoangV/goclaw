@@ -92,7 +92,7 @@ export function AgentCard({ agent, onClick, onResummon, onDelete }: AgentCardPro
             Resummon
           </Button>
         )}
-        {onDelete && (
+        {onDelete && !agent.is_default && (
           <Button
             variant="ghost"
             size="xs"

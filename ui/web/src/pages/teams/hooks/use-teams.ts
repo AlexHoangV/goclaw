@@ -1,6 +1,7 @@
 import { useState, useCallback } from "react";
 import { useWs } from "@/hooks/use-ws";
 import { Methods } from "@/api/protocol";
+import { toast } from "@/stores/use-toast-store";
 import type { TeamData, TeamMemberData, TeamTaskData, TeamAccessSettings } from "@/types/team";
 
 export function useTeams() {
@@ -38,8 +39,14 @@ export function useTeams() {
 
   const deleteTeam = useCallback(
     async (teamId: string) => {
-      await ws.call(Methods.TEAMS_DELETE, { teamId });
-      load();
+      try {
+        await ws.call(Methods.TEAMS_DELETE, { teamId });
+        load();
+        toast.success("Team deleted");
+      } catch (err) {
+        toast.error("Failed to delete team", err instanceof Error ? err.message : "Unknown error");
+        throw err;
+      }
     },
     [ws, load],
   );
