@@ -24,6 +24,7 @@ import {
   Brain,
   Network,
   Contact,
+  PartyPopper,
 } from "lucide-react";
 import { useTranslation } from "react-i18next";
 import { SidebarGroup } from "./sidebar-group";
@@ -74,6 +75,7 @@ export function Sidebar({ collapsed, onNavItemClick }: SidebarProps) {
           <SidebarItem to={ROUTES.CHAT} icon={MessageSquare} label={t("nav.chat")} collapsed={collapsed} />
           <SidebarItem to={ROUTES.AGENTS} icon={Bot} label={t("nav.agents")} collapsed={collapsed} />
           <SidebarItem to={ROUTES.TEAMS} icon={Users} label={t("nav.agentTeams")} collapsed={collapsed} />
+          <SidebarItem to={ROUTES.PARTY} icon={PartyPopper} label={t("nav.party")} collapsed={collapsed} />
         </SidebarGroup>
 
         <SidebarGroup label={t("groups.conversations")} collapsed={collapsed}>

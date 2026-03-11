@@ -31,6 +31,7 @@ import enMemory from "./locales/en/memory.json";
 import enStorage from "./locales/en/storage.json";
 import enPendingMessages from "./locales/en/pending-messages.json";
 import enContacts from "./locales/en/contacts.json";
+import enParty from "./locales/en/party.json";
 
 // --- VI namespaces ---
 import viCommon from "./locales/vi/common.json";
@@ -62,6 +63,7 @@ import viMemory from "./locales/vi/memory.json";
 import viStorage from "./locales/vi/storage.json";
 import viPendingMessages from "./locales/vi/pending-messages.json";
 import viContacts from "./locales/vi/contacts.json";
+import viParty from "./locales/vi/party.json";
 
 // --- ZH namespaces ---
 import zhCommon from "./locales/zh/common.json";
@@ -93,6 +95,7 @@ import zhMemory from "./locales/zh/memory.json";
 import zhStorage from "./locales/zh/storage.json";
 import zhPendingMessages from "./locales/zh/pending-messages.json";
 import zhContacts from "./locales/zh/contacts.json";
+import zhParty from "./locales/zh/party.json";
 
 const STORAGE_KEY = "goclaw:language";
 
@@ -110,7 +113,7 @@ const ns = [
   "agents", "teams", "sessions", "skills", "cron", "config",
   "channels", "providers", "traces", "events", "delegations",
   "usage", "approvals", "nodes", "logs", "tools", "mcp", "tts",
-  "setup", "memory", "storage", "pending-messages", "contacts",
+  "setup", "memory", "storage", "pending-messages", "contacts", "party",
 ] as const;
 
 i18n.use(initReactI18next).init({
@@ -125,6 +128,7 @@ i18n.use(initReactI18next).init({
       mcp: enMcp, tts: enTts, setup: enSetup, memory: enMemory, storage: enStorage,
       "pending-messages": enPendingMessages,
       contacts: enContacts,
+      party: enParty,
     },
     vi: {
       common: viCommon, sidebar: viSidebar, topbar: viTopbar, login: viLogin,
@@ -136,6 +140,7 @@ i18n.use(initReactI18next).init({
       mcp: viMcp, tts: viTts, setup: viSetup, memory: viMemory, storage: viStorage,
       "pending-messages": viPendingMessages,
       contacts: viContacts,
+      party: viParty,
     },
     zh: {
       common: zhCommon, sidebar: zhSidebar, topbar: zhTopbar, login: zhLogin,
@@ -147,6 +152,7 @@ i18n.use(initReactI18next).init({
       mcp: zhMcp, tts: zhTts, setup: zhSetup, memory: zhMemory, storage: zhStorage,
       "pending-messages": zhPendingMessages,
       contacts: zhContacts,
+      party: zhParty,
     },
   },
   ns: [...ns],

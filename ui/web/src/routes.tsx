@@ -90,6 +90,9 @@ const KnowledgeGraphPage = lazy(() =>
 const ContactsPage = lazy(() =>
   import("@/pages/contacts/contacts-page").then((m) => ({ default: m.ContactsPage })),
 );
+const PartyPage = lazy(() =>
+  import("@/pages/party/party-page").then((m) => ({ default: m.PartyPage })),
+);
 
 function PageLoader() {
   return (
@@ -160,6 +163,7 @@ export function AppRoutes() {
           <Route path={ROUTES.PENDING_MESSAGES} element={<PendingMessagesPage />} />
           <Route path={ROUTES.MEMORY} element={<MemoryPage />} />
           <Route path={ROUTES.KNOWLEDGE_GRAPH} element={<KnowledgeGraphPage />} />
+          <Route path={ROUTES.PARTY} element={<PartyPage />} />
         </Route>
 
         {/* Catch-all → overview */}

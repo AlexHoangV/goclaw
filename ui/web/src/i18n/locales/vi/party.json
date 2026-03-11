@@ -1,0 +1,46 @@
+{
+  "title": "Chế độ Party",
+  "newParty": "Tạo Party mới",
+  "topic": "Chủ đề thảo luận",
+  "selectTeam": "Chọn đội",
+  "customTeam": "Đội tùy chỉnh",
+  "start": "Bắt đầu thảo luận",
+  "presets": {
+    "payment_feature": "Tính năng Thanh toán",
+    "security_review": "Đánh giá Bảo mật",
+    "sprint_planning": "Lập kế hoạch Sprint",
+    "architecture_decision": "Quyết định Kiến trúc",
+    "ux_review": "Đánh giá UX",
+    "incident_response": "Xử lý sự cố"
+  },
+  "controls": {
+    "continue": "Tiếp tục",
+    "deepMode": "Chế độ Deep [P]",
+    "tokenRing": "Token Ring [R]",
+    "question": "Câu hỏi [Q]",
+    "summary": "Tóm tắt [D]",
+    "exit": "Thoát [E]"
+  },
+  "status": {
+    "thinking": "Đang suy nghĩ...",
+    "speaking": "Đang nói",
+    "idle": "Chờ"
+  },
+  "round": "Vòng {{n}}",
+  "mode": {
+    "standard": "Tiêu chuẩn",
+    "deep": "Deep",
+    "token_ring": "Token Ring"
+  },
+  "noSessions": "Chưa có phiên party nào",
+  "description": "Thảo luận AI đa nhân vật với các vòng có cấu trúc",
+  "exitConfirm": "Thoát phiên party này?",
+  "summary": {
+    "title": "Tóm tắt thảo luận",
+    "agreements": "Điểm đồng thuận",
+    "disagreements": "Điểm bất đồng",
+    "decisions": "Quyết định",
+    "actionItems": "Hạng mục hành động",
+    "compliance": "Ghi chú tuân thủ"
+  }
+}
