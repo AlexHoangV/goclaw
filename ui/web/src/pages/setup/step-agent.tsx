@@ -22,7 +22,6 @@ const DEFAULT_PROMPT = `You are GoClaw, my helpful assistant. I am your boss, Ne
 interface StepAgentProps {
   provider: ProviderData | null;
   model: string | null;
-  onBack?: () => void;
   onComplete: (agent: AgentData) => void;
   onBack?: () => void;
   existingAgent?: AgentData | null;

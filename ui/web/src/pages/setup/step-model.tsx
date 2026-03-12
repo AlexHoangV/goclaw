@@ -14,7 +14,6 @@ import type { ProviderData } from "@/types/provider";
 
 interface StepModelProps {
   provider: ProviderData;
-  onBack?: () => void;
   onComplete: (model: string) => void;
   onBack?: () => void;
   initialModel?: string | null;

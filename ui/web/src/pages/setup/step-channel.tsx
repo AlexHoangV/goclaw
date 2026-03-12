@@ -23,7 +23,6 @@ import type { AgentData } from "@/types/agent";
 
 interface StepChannelProps {
   agent: AgentData | null;
-  onBack?: () => void;
   onComplete: () => void;
   onSkip: () => void;
   onBack?: () => void;
