@@ -13,7 +13,7 @@ import { TeamTasksTab } from "./team-tasks-tab";
 import { TeamDelegationsTab } from "./team-delegations-tab";
 import { TeamSettingsTab } from "./team-settings-tab";
 import { TeamWorkspaceTab } from "./team-workspace-tab";
-import type { TeamData, TeamMemberData, ScopeEntry } from "@/types/team";
+import type { TeamData, TeamMemberData, TeamAccessSettings, ScopeEntry } from "@/types/team";
 
 interface TeamDetailPageProps {
   teamId: string;
@@ -109,6 +109,10 @@ export function TeamDetailPage({ teamId, onBack }: TeamDetailPageProps) {
             <Badge variant={team.status === "active" ? "success" : "secondary"}>
               {team.status}
             </Badge>
+            {((team.settings ?? {}) as TeamAccessSettings).version != null &&
+              ((team.settings ?? {}) as TeamAccessSettings).version! >= 2 && (
+              <Badge variant="secondary" className="text-[10px] px-1.5 py-0">V2 Beta</Badge>
+            )}
           </div>
           <div className="mt-1 flex flex-wrap items-center gap-x-2 gap-y-1 text-sm text-muted-foreground">
             {team.lead_agent_key && (
@@ -162,6 +166,7 @@ export function TeamDetailPage({ teamId, onBack }: TeamDetailPageProps) {
               teamId={teamId}
               members={members}
               scopes={scopes}
+              isTeamV2={((team.settings ?? {}) as TeamAccessSettings).version != null && ((team.settings ?? {}) as TeamAccessSettings).version! >= 2}
               getTeamTasks={getTeamTasks}
               getTaskDetail={getTaskDetail}
               approveTask={approveTask}

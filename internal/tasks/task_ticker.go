@@ -13,6 +13,7 @@ import (
 
 	"github.com/nextlevelbuilder/goclaw/internal/bus"
 	"github.com/nextlevelbuilder/goclaw/internal/store"
+	"github.com/nextlevelbuilder/goclaw/internal/tools"
 )
 
 const (
@@ -22,6 +23,9 @@ const (
 	followupCooldown        = 5 * time.Minute
 	defaultFollowupInterval = 30 * time.Minute
 )
+
+// isTeamV2 delegates to tools.IsTeamV2 for version checking.
+var isTeamV2 = tools.IsTeamV2
 
 // TaskTicker periodically recovers stale tasks and re-dispatches pending work.
 type TaskTicker struct {
@@ -102,6 +106,10 @@ func (t *TaskTicker) recoverAll(forceRecover bool) {
 
 	for _, team := range teams {
 		if team.Status != store.TeamStatusActive {
+			continue
+		}
+		// Skip v1 teams — ticker features (locking, followup, recovery) are v2 only.
+		if !isTeamV2(&team) {
 			continue
 		}
 		// Process followups BEFORE recovery: recovery resets in_progress→pending,
@@ -228,11 +236,14 @@ func (t *TaskTicker) processFollowups(ctx context.Context, team store.TeamData) 
 		}
 		content := fmt.Sprintf("Reminder (%s): %s", countLabel, task.FollowupMessage)
 
-		t.msgBus.PublishOutbound(bus.OutboundMessage{
+		if !t.msgBus.TryPublishOutbound(bus.OutboundMessage{
 			Channel: task.FollowupChannel,
 			ChatID:  task.FollowupChatID,
 			Content: content,
-		})
+		}) {
+			slog.Warn("task_ticker: outbound buffer full, skipping followup", "task_id", task.ID)
+			continue
+		}
 
 		// Compute next followup_at.
 		newCount := task.FollowupCount + 1
@@ -273,7 +284,7 @@ func (t *TaskTicker) dispatchTask(ctx context.Context, task *store.TeamTaskData,
 		content += "\n\n" + task.Description
 	}
 
-	t.msgBus.PublishInbound(bus.InboundMessage{
+	if !t.msgBus.TryPublishInbound(bus.InboundMessage{
 		Channel:  "system",
 		SenderID: "teammate:dashboard",
 		ChatID:   teamID.String(),
@@ -288,7 +299,10 @@ func (t *TaskTicker) dispatchTask(ctx context.Context, task *store.TeamTaskData,
 			"team_task_id":     task.ID.String(),
 			"team_id":          teamID.String(),
 		},
-	})
+	}) {
+		slog.Warn("task_ticker: inbound buffer full, skipping dispatch", "task_id", task.ID)
+		return
+	}
 	slog.Info("task_ticker: re-dispatched task",
 		"task_id", task.ID,
 		"task_number", task.TaskNumber,
@@ -320,7 +334,7 @@ func (t *TaskTicker) notifyLead(ctx context.Context, team store.TeamData, tasks 
 	}
 	content.WriteString("\n\nPlease review and assign these tasks to the appropriate available agents using the team_tasks tool.")
 
-	t.msgBus.PublishInbound(bus.InboundMessage{
+	if !t.msgBus.TryPublishInbound(bus.InboundMessage{
 		Channel:  "system",
 		SenderID: "teammate:system",
 		ChatID:   team.ID.String(),
@@ -334,7 +348,10 @@ func (t *TaskTicker) notifyLead(ctx context.Context, team store.TeamData, tasks 
 			"to_agent":         ag.AgentKey,
 			"team_id":          team.ID.String(),
 		},
-	})
+	}) {
+		slog.Warn("task_ticker: inbound buffer full, skipping lead notify", "team_id", team.ID)
+		return
+	}
 	slog.Info("task_ticker: notified lead about unassigned tasks",
 		"team_id", team.ID,
 		"lead_agent_key", ag.AgentKey,

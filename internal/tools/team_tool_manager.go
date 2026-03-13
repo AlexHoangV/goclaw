@@ -96,7 +96,7 @@ func (m *TeamToolManager) resolveTeam(ctx context.Context) (*store.TeamData, uui
 // Delegate/system channels bypass this check (they act on behalf of the lead).
 func (m *TeamToolManager) requireLead(ctx context.Context, team *store.TeamData, agentID uuid.UUID) error {
 	channel := ToolChannelFromCtx(ctx)
-	if channel == "delegate" || channel == "system" {
+	if channel == ChannelDelegate || channel == ChannelSystem {
 		return nil
 	}
 	if agentID != team.LeadAgentID {
@@ -109,7 +109,7 @@ func (m *TeamToolManager) requireLead(ctx context.Context, team *store.TeamData,
 // Called when team membership, settings, or links change.
 // Full clear is acceptable because team mutations are rare (admin-initiated).
 func (m *TeamToolManager) InvalidateTeam() {
-	m.teamCache = sync.Map{}
+	m.teamCache.Range(func(k, _ any) bool { m.teamCache.Delete(k); return true })
 }
 
 // resolveAgentByKey looks up an agent by key and returns its UUID.
@@ -170,6 +170,25 @@ func (m *TeamToolManager) agentDisplayName(ctx context.Context, key string) stri
 }
 
 // ============================================================
+// Version helpers
+// ============================================================
+
+// IsTeamV2 checks if team has version >= 2 in settings.
+// Returns false for nil team, nil/empty settings, or version < 2.
+func IsTeamV2(team *store.TeamData) bool {
+	if team == nil || team.Settings == nil {
+		return false
+	}
+	var s struct {
+		Version int `json:"version"`
+	}
+	if json.Unmarshal(team.Settings, &s) != nil {
+		return false
+	}
+	return s.Version >= 2
+}
+
+// ============================================================
 // Follow-up settings helpers
 // ============================================================
 
@@ -179,7 +198,11 @@ const (
 )
 
 // followupDelayMinutes returns the team's followup_interval_minutes setting, or the default.
+// Returns 0 for v1 teams (followup disabled).
 func (m *TeamToolManager) followupDelayMinutes(team *store.TeamData) int {
+	if !IsTeamV2(team) {
+		return 0
+	}
 	if team.Settings == nil {
 		return defaultFollowupDelayMinutes
 	}
@@ -194,7 +217,11 @@ func (m *TeamToolManager) followupDelayMinutes(team *store.TeamData) int {
 }
 
 // followupMaxReminders returns the team's followup_max_reminders setting, or the default.
+// Returns 0 for v1 teams (followup disabled).
 func (m *TeamToolManager) followupMaxReminders(team *store.TeamData) int {
+	if !IsTeamV2(team) {
+		return 0
+	}
 	if team.Settings == nil {
 		return defaultFollowupMaxReminders
 	}
@@ -223,7 +250,11 @@ const (
 )
 
 // checkEscalation parses the team's escalation_mode and escalation_actions settings.
+// Returns EscalationNone for v1 teams.
 func (m *TeamToolManager) checkEscalation(team *store.TeamData, action string) EscalationResult {
+	if !IsTeamV2(team) {
+		return EscalationNone
+	}
 	if team.Settings == nil {
 		return EscalationNone
 	}

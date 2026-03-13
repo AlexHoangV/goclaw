@@ -27,7 +27,7 @@ func NewTeamMessageTool(manager *TeamToolManager) *TeamMessageTool {
 func (t *TeamMessageTool) Name() string { return "team_message" }
 
 func (t *TeamMessageTool) Description() string {
-	return "Send and receive messages within your team. Actions: send (direct message to a teammate), broadcast (message all teammates), read (check unread messages). See TEAM.md for your teammates."
+	return "Send and receive messages within your team. Actions: send, broadcast, read. See TEAM.md for your teammates."
 }
 
 func (t *TeamMessageTool) Parameters() map[string]any {

@@ -23,6 +23,7 @@ interface TeamTasksTabProps {
   teamId: string;
   members: TeamMemberData[];
   scopes?: ScopeEntry[];
+  isTeamV2?: boolean;
   getTeamTasks: (teamId: string, status?: string, channel?: string, chatId?: string) => Promise<{ tasks: TeamTaskData[]; count: number }>;
   getTaskDetail: (teamId: string, taskId: string) => Promise<{
     task: TeamTaskData;
@@ -37,7 +38,13 @@ interface TeamTasksTabProps {
   assignTask: (teamId: string, taskId: string, agentId: string) => Promise<void>;
 }
 
-const filters: { value: StatusFilter; labelKey: string }[] = [
+const v1Filters: { value: StatusFilter; labelKey: string }[] = [
+  { value: "", labelKey: "tasks.filters.active" },
+  { value: "completed", labelKey: "tasks.filters.completed" },
+  { value: "all", labelKey: "tasks.filters.all" },
+];
+
+const v2Filters: { value: StatusFilter; labelKey: string }[] = [
   { value: "", labelKey: "tasks.filters.active" },
   { value: "in_review", labelKey: "tasks.filters.inReview" },
   { value: "completed", labelKey: "tasks.filters.completed" },
@@ -45,7 +52,8 @@ const filters: { value: StatusFilter; labelKey: string }[] = [
 ];
 
 export function TeamTasksTab({
-  teamId, members, scopes, getTeamTasks,
+  teamId, members, scopes, isTeamV2,
+  getTeamTasks,
   getTaskDetail, approveTask, rejectTask, addTaskComment,
   createTask, assignTask,
 }: TeamTasksTabProps) {
@@ -134,7 +142,7 @@ export function TeamTasksTab({
         <div className="flex items-center gap-2">
           {/* Status filter toggle */}
           <div className="flex rounded-lg border bg-muted/50 p-0.5">
-          {filters.map((f) => (
+          {(isTeamV2 ? v2Filters : v1Filters).map((f) => (
             <button
               key={f.value}
               onClick={() => setStatusFilter(f.value)}
@@ -187,6 +195,7 @@ export function TeamTasksTab({
         loading={loading}
         teamId={teamId}
         members={members}
+        isTeamV2={isTeamV2}
         getTaskDetail={getTaskDetail}
         approveTask={approveTask}
         rejectTask={rejectTask}

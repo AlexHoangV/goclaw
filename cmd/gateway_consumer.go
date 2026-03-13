@@ -163,7 +163,7 @@ func consumeInboundMessages(ctx context.Context, msgBus *bus.MessageBus, agents 
 
 		// Auto-clear followup reminders when user sends a message on a real channel.
 		// Fire-and-forget: don't block message processing.
-		if teamStore != nil && msg.Channel != "system" && msg.Channel != "delegate" && msg.Channel != "dashboard" {
+		if teamStore != nil && msg.Channel != tools.ChannelSystem && msg.Channel != tools.ChannelDelegate && msg.Channel != tools.ChannelDashboard {
 			go func(ch, cid string) {
 				if n, err := teamStore.ClearFollowupByScope(ctx, ch, cid); err != nil {
 					slog.Warn("auto-clear followup failed", "channel", ch, "chat_id", cid, "error", err)
@@ -414,7 +414,7 @@ func consumeInboundMessages(ctx context.Context, msgBus *bus.MessageBus, agents 
 			msgBus.PublishOutbound(outMsg)
 
 			// Auto-set followup when lead agent replies on a real channel with in_progress tasks.
-			if teamStore != nil && channel != "system" && channel != "delegate" && channel != "dashboard" {
+			if teamStore != nil && channel != tools.ChannelSystem && channel != tools.ChannelDelegate && channel != tools.ChannelDashboard {
 				go autoSetFollowup(ctx, teamStore, agentStore, agentKey, channel, chatID, outcome.Result.Content)
 			}
 		}(agentID, msg.Channel, msg.ChatID, sessionKey, runID, outMeta, blockReply)
@@ -451,7 +451,7 @@ func consumeInboundMessages(ctx context.Context, msgBus *bus.MessageBus, agents 
 		}
 
 		// --- Subagent announce: bypass debounce, inject into parent agent session ---
-		if msg.Channel == "system" && strings.HasPrefix(msg.SenderID, "subagent:") {
+		if msg.Channel == tools.ChannelSystem && strings.HasPrefix(msg.SenderID, "subagent:") {
 			origChannel := msg.Metadata["origin_channel"]
 			origPeerKind := msg.Metadata["origin_peer_kind"]
 			origLocalKey := msg.Metadata["origin_local_key"]
@@ -585,7 +585,7 @@ func consumeInboundMessages(ctx context.Context, msgBus *bus.MessageBus, agents 
 
 		// --- Delegate announce: bypass debounce, inject into parent agent session ---
 		// Same pattern as subagent announce above, using "delegate" lane.
-		if msg.Channel == "system" && strings.HasPrefix(msg.SenderID, "delegate:") {
+		if msg.Channel == tools.ChannelSystem && strings.HasPrefix(msg.SenderID, "delegate:") {
 			origChannel := msg.Metadata["origin_channel"]
 			origPeerKind := msg.Metadata["origin_peer_kind"]
 			origLocalKey := msg.Metadata["origin_local_key"]
@@ -709,7 +709,7 @@ func consumeInboundMessages(ctx context.Context, msgBus *bus.MessageBus, agents 
 
 		// --- Handoff announce: route initial message to target agent session ---
 		// Same pattern as teammate message routing, using "delegate" lane.
-		if msg.Channel == "system" && strings.HasPrefix(msg.SenderID, "handoff:") {
+		if msg.Channel == tools.ChannelSystem && strings.HasPrefix(msg.SenderID, "handoff:") {
 			origChannel := msg.Metadata["origin_channel"]
 			origPeerKind := msg.Metadata["origin_peer_kind"]
 			origLocalKey := msg.Metadata["origin_local_key"]
@@ -779,7 +779,7 @@ func consumeInboundMessages(ctx context.Context, msgBus *bus.MessageBus, agents 
 
 		// --- Teammate message: bypass debounce, route to target agent session ---
 		// Same pattern as delegate announce, using "delegate" lane.
-		if msg.Channel == "system" && strings.HasPrefix(msg.SenderID, "teammate:") {
+		if msg.Channel == tools.ChannelSystem && strings.HasPrefix(msg.SenderID, "teammate:") {
 			origChannel := msg.Metadata["origin_channel"]
 			origPeerKind := msg.Metadata["origin_peer_kind"]
 			origLocalKey := msg.Metadata["origin_local_key"]
@@ -835,34 +835,38 @@ func consumeInboundMessages(ctx context.Context, msgBus *bus.MessageBus, agents 
 			go func(origCh, chatID, senderID string, meta, inMeta map[string]string) {
 				outcome := <-outCh
 
-				// Auto-complete/fail the associated team task (if any).
+				// Auto-complete/fail the associated team task (v2 only).
 				if taskIDStr := inMeta["team_task_id"]; taskIDStr != "" {
 					teamTaskID, _ := uuid.Parse(taskIDStr)
 					teamID, _ := uuid.Parse(inMeta["team_id"])
 					if teamTaskID != uuid.Nil && teamStore != nil {
-						if outcome.Err != nil {
-							_ = teamStore.FailTask(ctx, teamTaskID, teamID, outcome.Err.Error())
-							_ = teamStore.RecordTaskEvent(ctx, &store.TeamTaskEventData{
-								TaskID:    teamTaskID,
-								EventType: "failed",
-								ActorType: "agent",
-								ActorID:   inMeta["to_agent"],
-							})
-						} else {
-							result := outcome.Result.Content
-							if len(outcome.Result.Deliverables) > 0 {
-								result = strings.Join(outcome.Result.Deliverables, "\n\n---\n\n")
+						// Only auto-complete/fail for v2 teams.
+						team, _ := teamStore.GetTeam(ctx, teamID)
+						if team != nil && isConsumerTeamV2(team) {
+							if outcome.Err != nil {
+								_ = teamStore.FailTask(ctx, teamTaskID, teamID, outcome.Err.Error())
+								_ = teamStore.RecordTaskEvent(ctx, &store.TeamTaskEventData{
+									TaskID:    teamTaskID,
+									EventType: "failed",
+									ActorType: "agent",
+									ActorID:   inMeta["to_agent"],
+								})
+							} else {
+								result := outcome.Result.Content
+								if len(outcome.Result.Deliverables) > 0 {
+									result = strings.Join(outcome.Result.Deliverables, "\n\n---\n\n")
+								}
+								if len(result) > 100_000 {
+									result = result[:100_000] + "\n[truncated]"
+								}
+								_ = teamStore.CompleteTask(ctx, teamTaskID, teamID, result)
+								_ = teamStore.RecordTaskEvent(ctx, &store.TeamTaskEventData{
+									TaskID:    teamTaskID,
+									EventType: "completed",
+									ActorType: "agent",
+									ActorID:   inMeta["to_agent"],
+								})
 							}
-							if len(result) > 100_000 {
-								result = result[:100_000] + "\n[truncated]"
-							}
-							_ = teamStore.CompleteTask(ctx, teamTaskID, teamID, result)
-							_ = teamStore.RecordTaskEvent(ctx, &store.TeamTaskEventData{
-								TaskID:    teamTaskID,
-								EventType: "completed",
-								ActorType: "agent",
-								ActorID:   inMeta["to_agent"],
-							})
 						}
 					}
 				}
@@ -1008,6 +1012,10 @@ func autoSetFollowup(ctx context.Context, teamStore store.TeamStore, agentStore 
 	if err != nil || team == nil || team.LeadAgentID != ag.ID {
 		return // only lead agent triggers auto-set
 	}
+	// Followup is a v2 feature.
+	if !isConsumerTeamV2(team) {
+		return
+	}
 
 	interval, max := parseFollowupSettings(team)
 	followupAt := time.Now().Add(interval)
@@ -1020,6 +1028,9 @@ func autoSetFollowup(ctx context.Context, teamStore store.TeamStore, agentStore 
 		slog.Info("auto-set followup: set", "channel", channel, "chat_id", chatID, "count", n, "followup_at", followupAt)
 	}
 }
+
+// isConsumerTeamV2 delegates to tools.IsTeamV2 for version checking.
+var isConsumerTeamV2 = tools.IsTeamV2
 
 // parseFollowupSettings extracts followup interval and max reminders from team settings.
 func parseFollowupSettings(team *store.TeamData) (time.Duration, int) {

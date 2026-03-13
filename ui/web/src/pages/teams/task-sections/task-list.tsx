@@ -12,6 +12,7 @@ interface TaskListProps {
   loading: boolean;
   teamId: string;
   members: TeamMemberData[];
+  isTeamV2?: boolean;
   getTaskDetail: (teamId: string, taskId: string) => Promise<{
     task: TeamTaskData;
     comments: TeamTaskComment[];
@@ -25,7 +26,7 @@ interface TaskListProps {
 }
 
 export function TaskList({
-  tasks, loading, teamId, members,
+  tasks, loading, teamId, members, isTeamV2,
   getTaskDetail, approveTask, rejectTask, addTaskComment, assignTask,
 }: TaskListProps) {
   const { t } = useTranslation("teams");
@@ -60,7 +61,6 @@ export function TaskList({
           <span>{t("tasks.columns.status")}</span>
           <span>{t("tasks.columns.owner")}</span>
           <span>{t("tasks.columns.priority")}</span>
-          <span className="text-right">{t("tasks.columns.actions")}</span>
         </div>
         {tasks.map((task) => (
           <div
@@ -88,7 +88,7 @@ export function TaskList({
               <Badge variant={taskStatusBadgeVariant(task.status)}>
                 {task.status.replace(/_/g, " ")}
               </Badge>
-              {task.followup_at && task.status === "in_progress" && (
+              {isTeamV2 && task.followup_at && task.status === "in_progress" && (
                 <Badge variant="outline" className="border-amber-500/50 bg-amber-500/10 text-[10px] text-amber-700 dark:text-amber-400">
                   {t("tasks.badges.awaitingReply")}
                 </Badge>
@@ -109,6 +109,7 @@ export function TaskList({
           task={selectedTask}
           teamId={teamId}
           members={members}
+          isTeamV2={isTeamV2}
           onClose={() => setSelectedTask(null)}
           getTaskDetail={getTaskDetail}
           approveTask={approveTask}

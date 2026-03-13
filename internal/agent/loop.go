@@ -563,12 +563,12 @@ func (l *Loop) runLoop(ctx context.Context, req RunRequest) (*RunResult, error) 
 
 		// No tool calls → done
 		if len(resp.ToolCalls) == 0 {
-			// Guard: detect orphaned team_tasks create (created but not spawned).
+			// Guard: detect orphaned team_tasks create (created but not spawned) — v2 only.
 			// Query DB for actual pending tasks instead of just counting tool calls,
 			// because auto-created tasks (from spawn without team_task_id) bypass the counter.
 			if teamTaskCreates > teamTaskSpawns && !teamTaskRetried {
 				if l.teamStore != nil && l.agentUUID != uuid.Nil {
-					if team, _ := l.teamStore.GetTeamForAgent(ctx, l.agentUUID); team != nil {
+					if team, _ := l.teamStore.GetTeamForAgent(ctx, l.agentUUID); team != nil && tools.IsTeamV2(team) {
 						if tasks, err := l.teamStore.ListTasks(ctx, team.ID, "newest", "", req.UserID, "", ""); err == nil {
 							var pendingIDs []string
 							for _, t := range tasks {

@@ -6,6 +6,7 @@ export const ESCALATION_ACTIONS = ["pin", "unpin", "tag", "set_template", "delet
 export type EscalationAction = (typeof ESCALATION_ACTIONS)[number];
 
 export interface TeamAccessSettings {
+  version?: number;
   allow_user_ids?: string[];
   deny_user_ids?: string[];
   allow_channels?: string[];
@@ -15,6 +16,8 @@ export interface TeamAccessSettings {
   escalation_actions?: EscalationAction[];
   followup_interval_minutes?: number;
   followup_max_reminders?: number;
+  workspace_scope?: string;
+  workspace_quota_mb?: number;
 }
 
 export interface TeamData {

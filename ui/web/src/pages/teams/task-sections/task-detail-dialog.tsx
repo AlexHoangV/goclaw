@@ -18,6 +18,7 @@ interface TaskDetailDialogProps {
   task: TeamTaskData;
   teamId: string;
   members: TeamMemberData[];
+  isTeamV2?: boolean;
   onClose: () => void;
   getTaskDetail: (teamId: string, taskId: string) => Promise<{
     task: TeamTaskData;
@@ -32,7 +33,7 @@ interface TaskDetailDialogProps {
 }
 
 export function TaskDetailDialog({
-  task, teamId, members, onClose,
+  task, teamId, members, isTeamV2, onClose,
   getTaskDetail, approveTask, rejectTask, addTaskComment, assignTask,
 }: TaskDetailDialogProps) {
   const { t } = useTranslation("teams");
@@ -134,8 +135,8 @@ export function TaskDetailDialog({
             <p className="text-sm font-medium">{task.subject}</p>
           </div>
 
-          {/* Follow-up status banner */}
-          {task.followup_at && task.status === "in_progress" && (
+          {/* Follow-up status banner (V2 only) */}
+          {isTeamV2 && task.followup_at && task.status === "in_progress" && (
             <div className="rounded-md border border-amber-500/30 bg-amber-500/5 p-3">
               <p className="mb-1 text-xs font-semibold text-amber-700 dark:text-amber-400">
                 {t("tasks.detail.followupStatus")}
@@ -163,8 +164,8 @@ export function TaskDetailDialog({
             </div>
           )}
 
-          {/* Progress bar */}
-          {task.progress_percent != null && task.progress_percent > 0 && (
+          {/* Progress bar (V2 only) */}
+          {isTeamV2 && task.progress_percent != null && task.progress_percent > 0 && (
             <div className="space-y-1">
               <div className="flex justify-between text-xs text-muted-foreground">
                 <span>{t("tasks.detail.progress")}</span>
@@ -218,8 +219,8 @@ export function TaskDetailDialog({
             )}
           </div>
 
-          {/* Approve / Reject buttons */}
-          {task.status === "in_review" && (
+          {/* Approve / Reject buttons (V2 only) */}
+          {isTeamV2 && task.status === "in_review" && (
             <div className="flex gap-2">
               <Button
                 variant="default"
@@ -295,8 +296,8 @@ export function TaskDetailDialog({
             </div>
           )}
 
-          {/* Attachments */}
-          {attachments.length > 0 && (
+          {/* Attachments (V2 only) */}
+          {isTeamV2 && attachments.length > 0 && (
             <div className="rounded-md border p-3">
               <p className="mb-2 text-xs font-medium text-muted-foreground">{t("tasks.detail.attachments")}</p>
               <div className="space-y-1">
@@ -310,8 +311,8 @@ export function TaskDetailDialog({
             </div>
           )}
 
-          {/* Timeline */}
-          {events.length > 0 && (
+          {/* Timeline (V2 only) */}
+          {isTeamV2 && events.length > 0 && (
             <div className="rounded-md border p-3">
               <p className="mb-2 text-xs font-medium text-muted-foreground">{t("tasks.detail.timeline")}</p>
               <div className="space-y-2">
@@ -328,8 +329,8 @@ export function TaskDetailDialog({
             </div>
           )}
 
-          {/* Comments */}
-          <div className="rounded-md border p-3">
+          {/* Comments (V2 only) */}
+          {isTeamV2 && <div className="rounded-md border p-3">
             <p className="mb-2 text-xs font-medium text-muted-foreground">{t("tasks.detail.comments")}</p>
             {comments.length > 0 ? (
               <div className="mb-3 space-y-2">
@@ -371,7 +372,7 @@ export function TaskDetailDialog({
                 {t("tasks.detail.addComment")}
               </Button>
             </div>
-          </div>
+          </div>}
         </div>
       </DialogContent>
     </Dialog>
