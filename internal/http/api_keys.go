@@ -37,33 +37,7 @@ func (h *APIKeysHandler) RegisterRoutes(mux *http.ServeMux) {
 
 // adminAuth ensures the caller has admin access (gateway token or API key with admin scope).
 func (h *APIKeysHandler) adminAuth(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		locale := extractLocale(r)
-		bearer := extractBearerToken(r)
-
-		// Try gateway token first
-		if h.token != "" && tokenMatch(bearer, h.token) {
-			next(w, r)
-			return
-		}
-
-		// Try API key with admin scope
-		if key, role := resolveAPIKey(r.Context(), bearer, h.apiKeys); key != nil {
-			if role == permissions.RoleAdmin {
-				next(w, r)
-				return
-			}
-		}
-
-		// No auth configured = allow (backward compat)
-		if h.token == "" {
-			slog.Warn("security.api_keys_no_auth", "path", r.URL.Path, "remote", r.RemoteAddr)
-			next(w, r)
-			return
-		}
-
-		writeJSON(w, http.StatusUnauthorized, map[string]string{"error": i18n.T(locale, i18n.MsgUnauthorized)})
-	}
+	return requireAuth(h.token, permissions.RoleAdmin, next)
 }
 
 func (h *APIKeysHandler) handleList(w http.ResponseWriter, r *http.Request) {

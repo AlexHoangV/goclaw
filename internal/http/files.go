@@ -34,9 +34,7 @@ func (h *FilesHandler) auth(next http.HandlerFunc) http.HandlerFunc {
 		if provided == "" {
 			provided = r.URL.Query().Get("token")
 		}
-		if !tryAuthBearer(r, h.token, provided) {
-			locale := extractLocale(r)
-			writeJSON(w, http.StatusUnauthorized, map[string]string{"error": i18n.T(locale, i18n.MsgUnauthorized)})
+		if !requireAuthBearer(h.token, "", provided, w, r) {
 			return
 		}
 		next(w, r)

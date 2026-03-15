@@ -11,6 +11,7 @@ import (
 
 	"github.com/nextlevelbuilder/goclaw/internal/bus"
 	"github.com/nextlevelbuilder/goclaw/internal/i18n"
+	"github.com/nextlevelbuilder/goclaw/internal/permissions"
 	"github.com/nextlevelbuilder/goclaw/internal/store"
 	"github.com/nextlevelbuilder/goclaw/internal/tools"
 	"github.com/nextlevelbuilder/goclaw/pkg/protocol"
@@ -40,20 +41,7 @@ func (h *SecureCLIHandler) RegisterRoutes(mux *http.ServeMux) {
 }
 
 func (h *SecureCLIHandler) auth(next http.HandlerFunc) http.HandlerFunc {
-	return func(w http.ResponseWriter, r *http.Request) {
-		if !tryAuth(r, h.token) {
-			locale := extractLocale(r)
-			writeJSON(w, http.StatusUnauthorized, map[string]string{"error": i18n.T(locale, i18n.MsgUnauthorized)})
-			return
-		}
-		userID := extractUserID(r)
-		ctx := store.WithLocale(r.Context(), extractLocale(r))
-		if userID != "" {
-			ctx = store.WithUserID(ctx, userID)
-		}
-		r = r.WithContext(ctx)
-		next(w, r)
-	}
+	return requireAuth(h.token, permissions.RoleAdmin, next)
 }
 
 func (h *SecureCLIHandler) emitCacheInvalidate(key string) {

@@ -179,10 +179,9 @@ func (t *ExecTool) executeCredentialedSandbox(ctx context.Context, absPath strin
 
 	sb, err := t.sandboxMgr.Get(ctx, sandboxKey, t.workingDir, SandboxConfigFromCtx(ctx))
 	if err != nil {
-		slog.Warn("security.credentialed_exec_sandbox_fallback",
-			"binary", absPath, "error", err,
-			"detail", "sandbox unavailable, falling back to host execution with credentials")
-		return t.executeCredentialedHost(ctx, absPath, args, cwd, envMap, timeout)
+		slog.Warn("security.credentialed_exec_sandbox_unavailable",
+			"binary", absPath, "error", err)
+		return ErrorResult("credentialed exec requires sandbox but sandbox is unavailable: " + err.Error())
 	}
 
 	// Direct exec inside sandbox: [absPath, args...] with env injection
