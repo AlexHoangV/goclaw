@@ -19,3 +19,12 @@ export function RequireOperator({ children }: { children: React.ReactNode }) {
   }
   return <>{children}</>;
 }
+
+/** Renders children only if user has cross-tenant access (system owner). */
+export function RequireCrossTenant({ children }: { children: React.ReactNode }) {
+  const isCrossTenant = useAuthStore((s) => s.isCrossTenant);
+  if (!isCrossTenant) {
+    return <Navigate to={ROUTES.OVERVIEW} replace />;
+  }
+  return <>{children}</>;
+}

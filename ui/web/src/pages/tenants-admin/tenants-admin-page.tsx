@@ -28,9 +28,9 @@ function statusVariant(status: string): "default" | "secondary" | "destructive" 
 export function TenantsAdminPage() {
   const { t } = useTranslation("tenants");
   const { t: tc } = useTranslation("common");
-  const { tenants, loading, refresh, createTenant } = useTenantsAdmin();
+  const { tenants, loading, refreshing, refresh, createTenant } = useTenantsAdmin();
 
-  const spinning = useMinLoading(loading);
+  const spinning = useMinLoading(refreshing);
   const showSkeleton = useDeferredLoading(loading && tenants.length === 0);
 
   const [createOpen, setCreateOpen] = useState(false);

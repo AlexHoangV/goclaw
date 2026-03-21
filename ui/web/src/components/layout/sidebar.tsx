@@ -35,6 +35,7 @@ import { ConnectionStatus } from "./connection-status";
 import { ROUTES } from "@/lib/constants";
 import { cn } from "@/lib/utils";
 import { usePendingPairingsCount } from "@/hooks/use-pending-pairings-count";
+import { useAuthStore } from "@/stores/use-auth-store";
 import { useTenants } from "@/hooks/use-tenants";
 
 interface SidebarProps {
@@ -45,7 +46,9 @@ interface SidebarProps {
 export function Sidebar({ collapsed, onNavItemClick }: SidebarProps) {
   const { t } = useTranslation("sidebar");
   const { pendingCount } = usePendingPairingsCount();
+  const role = useAuthStore((s) => s.role);
   const { isCrossTenant } = useTenants();
+  const isAdmin = role === "admin";
 
   return (
     <aside
@@ -113,6 +116,7 @@ export function Sidebar({ collapsed, onNavItemClick }: SidebarProps) {
           <SidebarItem to={ROUTES.LOGS} icon={Terminal} label={t("nav.logs")} collapsed={collapsed} />
         </SidebarGroup>
 
+        {isAdmin && (
         <SidebarGroup label={t("groups.system")} collapsed={collapsed}>
           {isCrossTenant && (
             <SidebarItem to={ROUTES.TENANTS} icon={Building2} label={t("nav.tenants")} collapsed={collapsed} />
@@ -125,6 +129,7 @@ export function Sidebar({ collapsed, onNavItemClick }: SidebarProps) {
           <SidebarItem to={ROUTES.APPROVALS} icon={ShieldCheck} label={t("nav.approvals")} collapsed={collapsed} />
           <SidebarItem to="/docs" icon={FileText} label={t("nav.apiDocs")} collapsed={collapsed} external />
         </SidebarGroup>
+        )}
       </nav>
 
       {/* Footer: connection status */}

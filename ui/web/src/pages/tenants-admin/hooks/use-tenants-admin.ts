@@ -11,7 +11,7 @@ export function useTenantsAdmin() {
   const ws = useWs();
   const queryClient = useQueryClient();
 
-  const { data: tenants = [], isLoading: loading } = useQuery({
+  const { data: tenants = [], isLoading: loading, isFetching: refreshing } = useQuery({
     queryKey: queryKeys.tenants.all,
     queryFn: async () => {
       const res = await ws.call<{ tenants: TenantData[] }>(Methods.TENANTS_LIST);
@@ -40,5 +40,5 @@ export function useTenantsAdmin() {
     [ws, invalidate],
   );
 
-  return { tenants, loading, refresh: invalidate, createTenant };
+  return { tenants, loading, refreshing, refresh: invalidate, createTenant };
 }

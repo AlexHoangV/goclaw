@@ -2,7 +2,7 @@ import { Suspense } from "react";
 import { Routes, Route, Navigate } from "react-router";
 import { AppLayout } from "@/components/layout/app-layout";
 import { RequireAuth } from "@/components/shared/require-auth";
-import { RequireAdmin } from "@/components/shared/require-role";
+import { RequireAdmin, RequireCrossTenant } from "@/components/shared/require-role";
 import { RequireSetup } from "@/components/shared/require-setup";
 import { ErrorBoundary } from "@/components/shared/error-boundary";
 import { ROUTES } from "@/lib/constants";
@@ -163,7 +163,7 @@ export function AppRoutes() {
           <Route path={ROUTES.TTS} element={<RequireAdmin><TtsPage /></RequireAdmin>} />
           <Route path={ROUTES.STORAGE} element={<RequireAdmin><StoragePage /></RequireAdmin>} />
           <Route path={ROUTES.PACKAGES} element={<RequireAdmin><PackagesPage /></RequireAdmin>} />
-          <Route path={ROUTES.TENANTS} element={<RequireAdmin><TenantsAdminPage /></RequireAdmin>} />
+          <Route path={ROUTES.TENANTS} element={<RequireCrossTenant><TenantsAdminPage /></RequireCrossTenant>} />
 
           {/* Operator+ pages */}
           <Route path={ROUTES.TRACES} element={<TracesPage key="list" />} />
