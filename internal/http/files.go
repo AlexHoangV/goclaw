@@ -39,7 +39,7 @@ func (h *FilesHandler) auth(next http.HandlerFunc) http.HandlerFunc {
 	return func(w http.ResponseWriter, r *http.Request) {
 		// Priority 1: short-lived signed file token (?ft=) — no gateway token exposure.
 		if ft := r.URL.Query().Get("ft"); ft != "" {
-			path := "/" + r.PathValue("path")
+			path := "/v1/files/" + r.PathValue("path")
 			if VerifyFileToken(ft, path, h.token) {
 				next(w, r)
 				return
