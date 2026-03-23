@@ -240,6 +240,15 @@ func resolvePathWithAllowed(path, workspace string, restrict bool, allowedPrefix
 			prefixReal = absPrefix
 		}
 		if isPathInside(real, prefixReal) {
+			// Validate that the resolved path doesn't escape via symlink to
+			// an unrelated location that merely shares a prefix string.
+			// Re-resolve symlinks on the final real path to catch chained symlinks.
+			finalReal, finalErr := filepath.EvalSymlinks(real)
+			if finalErr == nil && !isPathInside(finalReal, prefixReal) {
+				slog.Warn("security.symlink_escape_via_prefix",
+					"path", cleaned, "resolved", finalReal, "prefix", prefixReal)
+				continue
+			}
 			slog.Debug("read_file: allowed by prefix", "path", real, "prefix", prefixReal)
 			return real, nil
 		}

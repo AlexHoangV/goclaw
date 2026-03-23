@@ -89,7 +89,8 @@ func (t *TaskTicker) loop() {
 }
 
 func (t *TaskTicker) recoverAll(forceRecover bool) {
-	ctx := context.Background()
+	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
+	defer cancel()
 
 	// Step 1: Batch followups (before recovery — recovery resets in_progress→pending,
 	// which would make followup tasks invisible since followup queries status='in_progress').
