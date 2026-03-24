@@ -41,10 +41,12 @@ func (s *PGCronStore) UpdateJob(ctx context.Context, jobID string, patch store.C
 		var curExpr, curTZ *string
 		var curIntervalMS *int64
 		var curRunAt *time.Time
-		s.db.QueryRowContext(ctx,
+		if err := s.db.QueryRowContext(ctx,
 			"SELECT schedule_kind, cron_expression, timezone, interval_ms, run_at FROM cron_jobs WHERE id = $1"+tenantSuffix,
 			append([]any{id}, tenantArg...)...,
-		).Scan(&curKind, &curExpr, &curTZ, &curIntervalMS, &curRunAt)
+		).Scan(&curKind, &curExpr, &curTZ, &curIntervalMS, &curRunAt); err != nil {
+			return nil, fmt.Errorf("failed to fetch current schedule for job %s: %w", jobID, err)
+		}
 
 		// Resolve the effective schedule kind
 		newKind := patch.Schedule.Kind
@@ -164,7 +166,9 @@ func (s *PGCronStore) UpdateJob(ctx context.Context, jobID string, patch store.C
 		var payloadJSON []byte
 		if scanErr := s.db.QueryRowContext(ctx, "SELECT payload FROM cron_jobs WHERE id = $1"+tenantSuffix, append([]any{id}, tenantArg...)...).Scan(&payloadJSON); scanErr == nil {
 			var payload store.CronPayload
-			json.Unmarshal(payloadJSON, &payload)
+			if err := json.Unmarshal(payloadJSON, &payload); err != nil {
+				return nil, fmt.Errorf("failed to parse existing payload for job %s: %w", jobID, err)
+			}
 
 			if patch.Message != "" {
 				payload.Message = patch.Message
