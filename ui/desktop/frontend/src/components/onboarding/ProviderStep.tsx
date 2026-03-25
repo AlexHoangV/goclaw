@@ -79,21 +79,37 @@ export function ProviderStep({ onNext, onBack, onProviderSaved }: ProviderStepPr
       }
       if (provider.needsKey) payload.api_key = apiKey.trim()
 
-      const created = await api.post<{ id: string }>('/v1/providers', payload)
+      // Try to create; if slug exists, find existing and update it
+      let providerId: string
+      try {
+        const created = await api.post<{ id: string }>('/v1/providers', payload)
+        providerId = created.id
+      } catch (createErr) {
+        // Provider slug may already exist — find it and update
+        const list = await api.get<{ providers: { id: string; name: string }[] }>('/v1/providers')
+        const existing = list.providers?.find((p) => p.name === slug)
+        if (existing) {
+          await api.put(`/v1/providers/${existing.id}`, payload)
+          providerId = existing.id
+        } else {
+          throw createErr
+        }
+      }
+
       const result = await api.post<{ valid: boolean; error?: string }>(
-        `/v1/providers/${created.id}/verify`,
+        `/v1/providers/${providerId}/verify`,
         { model: provider.defaultModel }
       )
       const elapsed = Date.now() - start
       if (result.valid) {
         setStatus('ok')
         setStatusMsg(`Connected in ${elapsed}ms`)
-        onProviderSaved(created.id)
+        onProviderSaved(providerId)
       } else {
         setStatus('error')
         setStatusMsg(result.error ?? 'Connection failed')
         // Clean up failed provider
-        api.delete(`/v1/providers/${created.id}`).catch(() => {})
+        api.delete(`/v1/providers/${providerId}`).catch(() => {})
       }
     } catch (err) {
       setStatus('error')
