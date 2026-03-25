@@ -1,3 +1,4 @@
+import { useState } from 'react'
 import { useUiStore } from '../../stores/ui-store'
 
 function MoonIcon() {
@@ -36,6 +37,8 @@ function GearIcon() {
 export function TopBar() {
   const theme = useUiStore((s) => s.theme)
   const toggleTheme = useUiStore((s) => s.toggleTheme)
+  const resetOnboarding = useUiStore((s) => s.resetOnboarding)
+  const [menuOpen, setMenuOpen] = useState(false)
 
   return (
     <header
@@ -55,12 +58,28 @@ export function TopBar() {
         >
           {theme === 'dark' ? <SunIcon /> : <MoonIcon />}
         </button>
-        <button
-          className="w-7 h-7 flex items-center justify-center rounded-md text-text-muted hover:text-text-primary hover:bg-surface-tertiary transition-colors"
-          title="Settings"
-        >
-          <GearIcon />
-        </button>
+        <div className="relative">
+          <button
+            onClick={() => setMenuOpen((v) => !v)}
+            className="w-7 h-7 flex items-center justify-center rounded-md text-text-muted hover:text-text-primary hover:bg-surface-tertiary transition-colors"
+            title="Settings"
+          >
+            <GearIcon />
+          </button>
+          {menuOpen && (
+            <>
+              <div className="fixed inset-0 z-40" onClick={() => setMenuOpen(false)} />
+              <div className="absolute right-0 top-full mt-1 z-50 w-44 bg-surface-secondary border border-border rounded-lg shadow-lg py-1">
+                <button
+                  onClick={() => { resetOnboarding(); setMenuOpen(false) }}
+                  className="w-full text-left px-3 py-1.5 text-sm text-text-secondary hover:bg-surface-tertiary transition-colors"
+                >
+                  Run Setup Wizard
+                </button>
+              </div>
+            </>
+          )}
+        </div>
       </div>
     </header>
   )

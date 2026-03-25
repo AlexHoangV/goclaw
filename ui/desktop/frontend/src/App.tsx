@@ -39,8 +39,9 @@ function AppReady() {
 
 function App() {
   const theme = useUiStore((s) => s.theme)
+  const onboarded = useUiStore((s) => s.onboarded)
+  const completeOnboarding = useUiStore((s) => s.completeOnboarding)
   const [ready, setReady] = useState(false)
-  const [showOnboarding, setShowOnboarding] = useState(false)
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark')
@@ -69,16 +70,13 @@ function App() {
       initWsClient(wsUrl, token)
       initApiClient(url, token)
 
-      // Show onboarding wizard on first launch
-      setShowOnboarding(!localStorage.getItem('goclaw-onboarded'))
       setReady(true)
     }
     init()
   }, [])
 
   const handleOnboardingComplete = () => {
-    localStorage.setItem('goclaw-onboarded', '1')
-    setShowOnboarding(false)
+    completeOnboarding()
   }
 
   if (!ready) {
@@ -92,7 +90,7 @@ function App() {
     )
   }
 
-  if (showOnboarding) {
+  if (!onboarded) {
     return <OnboardingWizard onComplete={handleOnboardingComplete} />
   }
 
