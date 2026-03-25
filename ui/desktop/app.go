@@ -1,0 +1,134 @@
+//go:build sqliteonly
+
+package main
+
+import (
+	"context"
+	"fmt"
+	"log/slog"
+	"net/http"
+	"os"
+	"time"
+
+	"github.com/nextlevelbuilder/goclaw/cmd"
+)
+
+// App holds Wails application state and embedded gateway lifecycle.
+type App struct {
+	ctx          context.Context
+	cancelGw     context.CancelFunc
+	gatewayToken string
+	gatewayPort  int
+}
+
+// NewApp creates a new App instance with default port.
+func NewApp() *App {
+	return &App{
+		gatewayPort: 18790,
+	}
+}
+
+// startup is called by Wails when the application starts.
+func (a *App) startup(ctx context.Context) {
+	a.ctx = ctx
+
+	// Resolve port from env or use default.
+	if p := os.Getenv("GOCLAW_PORT"); p != "" {
+		fmt.Sscanf(p, "%d", &a.gatewayPort)
+	}
+
+	// Ensure secrets (encryption key + gateway token) via OS keyring or file fallback.
+	encKey, gwToken, err := EnsureSecrets()
+	if err != nil {
+		slog.Error("failed to setup secrets", "error", err)
+		return
+	}
+	a.gatewayToken = gwToken
+
+	// Set env vars consumed by the embedded gateway.
+	os.Setenv("GOCLAW_ENCRYPTION_KEY", encKey)
+	os.Setenv("GOCLAW_GATEWAY_TOKEN", gwToken)
+	os.Setenv("GOCLAW_STORAGE_BACKEND", "sqlite")
+
+	// Ensure data directory exists.
+	dataDir := os.Getenv("GOCLAW_DATA_DIR")
+	if dataDir == "" {
+		home, _ := os.UserHomeDir()
+		dataDir = home + "/.goclaw/data"
+		os.Setenv("GOCLAW_DATA_DIR", dataDir)
+	}
+	os.MkdirAll(dataDir, 0755)
+
+	// Start gateway in background with a cancel context for graceful shutdown.
+	gwCtx, cancel := context.WithCancel(context.Background())
+	a.cancelGw = cancel
+
+	go func() {
+		// When context is cancelled, interrupt the process to trigger gateway shutdown.
+		go func() {
+			<-gwCtx.Done()
+			p, _ := os.FindProcess(os.Getpid())
+			p.Signal(os.Interrupt)
+		}()
+		slog.Info("starting embedded gateway", "port", a.gatewayPort)
+		cmd.RunGateway()
+	}()
+
+	a.waitForGateway()
+}
+
+// waitForGateway polls the health endpoint until the gateway is ready or times out.
+func (a *App) waitForGateway() {
+	url := fmt.Sprintf("http://localhost:%d/health", a.gatewayPort)
+	for i := 0; i < 30; i++ {
+		resp, err := http.Get(url)
+		if err == nil && resp.StatusCode == 200 {
+			resp.Body.Close()
+			slog.Info("gateway ready", "port", a.gatewayPort)
+			return
+		}
+		if resp != nil {
+			resp.Body.Close()
+		}
+		time.Sleep(500 * time.Millisecond)
+	}
+	slog.Warn("gateway not responding after 15s")
+}
+
+// shutdown is called by Wails when the application is closing.
+func (a *App) shutdown(ctx context.Context) {
+	if a.cancelGw != nil {
+		a.cancelGw()
+	}
+}
+
+// GetGatewayURL returns the base URL of the embedded gateway.
+func (a *App) GetGatewayURL() string {
+	return fmt.Sprintf("http://localhost:%d", a.gatewayPort)
+}
+
+// GetGatewayToken returns the token for WebSocket authentication.
+func (a *App) GetGatewayToken() string {
+	return a.gatewayToken
+}
+
+// GetGatewayPort returns the gateway port number.
+func (a *App) GetGatewayPort() int {
+	return a.gatewayPort
+}
+
+// IsGatewayReady checks if the gateway health endpoint is responding.
+func (a *App) IsGatewayReady() bool {
+	url := fmt.Sprintf("http://localhost:%d/health", a.gatewayPort)
+	resp, err := http.Get(url)
+	if err != nil {
+		return false
+	}
+	resp.Body.Close()
+	return resp.StatusCode == 200
+}
+
+// GetVersion returns the embedded gateway version string.
+func (a *App) GetVersion() string {
+	return cmd.Version
+}

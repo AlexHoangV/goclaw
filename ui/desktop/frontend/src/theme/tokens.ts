@@ -1,0 +1,45 @@
+export const theme = {
+  colors: {
+    dark: {
+      surfacePrimary: '#0F172A',
+      surfaceSecondary: '#1E293B',
+      surfaceTertiary: '#334155',
+      textPrimary: '#F1F5F9',
+      textSecondary: '#CBD5E1',
+      textMuted: '#94A3B8',
+      accent: '#5E6AD2',
+      accentHover: '#6D7CE8',
+      border: '#334155',
+      userBubble: '#1E293B',
+      agentBubble: '#334155',
+    },
+    light: {
+      surfacePrimary: '#FFFFFF',
+      surfaceSecondary: '#F8FAFC',
+      surfaceTertiary: '#F1F5F9',
+      textPrimary: '#0F172A',
+      textSecondary: '#475569',
+      textMuted: '#94A3B8',
+      accent: '#5E6AD2',
+      accentHover: '#6D7CE8',
+      border: '#E2E8F0',
+      userBubble: '#EFF6FF',
+      agentBubble: '#F0F9FF',
+    },
+  },
+  status: {
+    online: '#22C55E',
+    busy: '#F59E0B',
+    offline: '#EF4444',
+    idle: '#9CA3AF',
+  },
+  radii: {
+    card: '12px',
+    button: '8px',
+    input: '6px',
+  },
+  fonts: {
+    sans: "'Inter', system-ui, -apple-system, sans-serif",
+    mono: "'JetBrains Mono', ui-monospace, monospace",
+  },
+} as const

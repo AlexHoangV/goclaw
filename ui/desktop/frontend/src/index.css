@@ -1,0 +1,108 @@
+@import "tailwindcss";
+
+@theme {
+  /* Magic Blue - Dark Mode (Primary) */
+  --color-surface-primary: #0F172A;
+  --color-surface-secondary: #1E293B;
+  --color-surface-tertiary: #334155;
+  --color-text-primary: #F1F5F9;
+  --color-text-secondary: #CBD5E1;
+  --color-text-muted: #94A3B8;
+  --color-accent: #5E6AD2;
+  --color-accent-hover: #6D7CE8;
+  --color-border: #334155;
+  --color-user-bubble: #1E293B;
+  --color-agent-bubble: #334155;
+  --color-success: #22C55E;
+  --color-warning: #F59E0B;
+  --color-error: #EF4444;
+  --color-idle: #9CA3AF;
+
+  /* Typography */
+  --font-sans: 'Inter', system-ui, -apple-system, sans-serif;
+  --font-mono: 'JetBrains Mono', ui-monospace, monospace;
+
+  /* Radii */
+  --radius-card: 12px;
+  --radius-button: 8px;
+  --radius-input: 6px;
+}
+
+/* Light mode overrides */
+@media (prefers-color-scheme: light) {
+  :root:not(.dark) {
+    --color-surface-primary: #FFFFFF;
+    --color-surface-secondary: #F8FAFC;
+    --color-surface-tertiary: #F1F5F9;
+    --color-text-primary: #0F172A;
+    --color-text-secondary: #475569;
+    --color-text-muted: #94A3B8;
+    --color-border: #E2E8F0;
+    --color-user-bubble: #EFF6FF;
+    --color-agent-bubble: #F0F9FF;
+  }
+}
+
+.dark {
+  color-scheme: dark;
+}
+
+/* Force dark mode class overrides */
+.dark {
+  --color-surface-primary: #0F172A;
+  --color-surface-secondary: #1E293B;
+  --color-surface-tertiary: #334155;
+  --color-text-primary: #F1F5F9;
+  --color-text-secondary: #CBD5E1;
+  --color-text-muted: #94A3B8;
+  --color-border: #334155;
+  --color-user-bubble: #1E293B;
+  --color-agent-bubble: #334155;
+}
+
+/* Base styles */
+body {
+  margin: 0;
+  background: var(--color-surface-primary);
+  color: var(--color-text-primary);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+  overflow: hidden;
+}
+
+/* Scrollbar */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: var(--color-surface-tertiary);
+  border-radius: 3px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: var(--color-text-muted);
+}
+
+/* Selection */
+::selection {
+  background: var(--color-accent);
+  color: white;
+}
+
+/* Wails drag region for frameless window */
+.wails-drag {
+  --wails-draggable: drag;
+}
+
+/* Transitions */
+* {
+  transition-duration: 150ms;
+  transition-timing-function: ease-in-out;
+}
+
+/* Prevent transition on load */
+.no-transition * {
+  transition: none !important;
+}
