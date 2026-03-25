@@ -13,15 +13,16 @@ export function useAgents() {
     try {
       const result = await api.get<{ agents: Array<{
         id: string
-        key?: string
-        name?: string
+        agent_key: string
+        display_name?: string
         model?: string
+        provider?: string
       }> }>('/v1/agents')
 
       const mapped: Agent[] = (result.agents ?? []).map((a) => ({
         id: a.id,
-        key: a.key ?? a.id,
-        name: a.name ?? 'Unnamed',
+        key: a.agent_key,
+        name: a.display_name || a.agent_key,
         model: a.model ?? 'unknown',
         status: 'idle' as const,
       }))
