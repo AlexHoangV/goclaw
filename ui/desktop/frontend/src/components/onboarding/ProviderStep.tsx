@@ -97,7 +97,13 @@ export function ProviderStep({ onNext, onBack, onProviderSaved }: ProviderStepPr
       }
     } catch (err) {
       setStatus('error')
-      setStatusMsg(err instanceof Error ? err.message : 'Connection failed')
+      const msg = err instanceof Error ? err.message : 'Connection failed'
+      console.error('[onboarding] provider test failed:', err, 'api base:', getApiClient()?.['baseUrl'])
+      if (msg === 'Load failed' || msg === 'Failed to fetch') {
+        setStatusMsg('Cannot reach gateway — is it running? (check console for details)')
+      } else {
+        setStatusMsg(msg)
+      }
     }
   }
 
