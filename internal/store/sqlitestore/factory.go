@@ -39,9 +39,16 @@ func NewSQLiteStores(cfg store.StoreConfig) (*store.Stores, error) {
 		SkillTenantCfgs:       NewSQLiteSkillTenantConfigStore(db),
 		SystemConfigs:         NewSQLiteSystemConfigStore(db),
 		Snapshots:             NewSQLiteSnapshotStore(db),
+		Cron:                  NewSQLiteCronStore(db),
+		ChannelInstances:      NewSQLiteChannelInstanceStore(db, cfg.EncryptionKey),
+		Pairing:               NewSQLitePairingStore(db),
+		PendingMessages:       NewSQLitePendingMessageStore(db),
+		Contacts:              NewSQLiteContactStore(db),
+		Teams:  NewSQLiteTeamStore(db),
+		Skills: NewSQLiteSkillStore(db, cfg.SkillsStorageDir),
+		MCP:    NewSQLiteMCPServerStore(db, cfg.EncryptionKey),
 		// Phase 2 Batch B+C stores (nil = gracefully skipped by gateway):
-		// Memory, Cron, Pairing, Skills, MCP, ChannelInstances,
-		// AgentLinks, Teams, PendingMessages, KnowledgeGraph,
-		// Contacts, Activity, SecureCLI, APIKeys, ConfigPermissions
+		// Memory, AgentLinks, KnowledgeGraph,
+		// Activity, SecureCLI, APIKeys, ConfigPermissions
 	}, nil
 }
