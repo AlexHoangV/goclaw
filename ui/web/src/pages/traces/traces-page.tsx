@@ -159,9 +159,8 @@ export function TracesPage() {
                         <StatusBadge status={trace.status} />
                         {(trace.status === "running" || trace.status === "pending") && (
                           <Button
-                            variant="ghost"
-                            size="icon-sm"
-                            className="h-6 w-6 text-destructive hover:bg-destructive/10"
+                            variant="destructive"
+                            size="icon-xs"
                             onClick={(e) => handleAbortRun(trace, e)}
                             title={t("stopRun")}
                           >
