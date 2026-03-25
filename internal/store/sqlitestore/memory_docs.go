@@ -21,17 +21,17 @@ func (s *SQLiteMemoryStore) GetDocument(ctx context.Context, agentID, userID, pa
 	var err error
 
 	if userID == "" {
-		tc, tcArgs, err := scopeClause(ctx)
-		if err != nil {
-			return "", err
+		tc, tcArgs, tcErr := scopeClause(ctx)
+		if tcErr != nil {
+			return "", tcErr
 		}
 		err = s.db.QueryRowContext(ctx,
 			"SELECT content FROM memory_documents WHERE agent_id = ? AND path = ? AND user_id IS NULL"+tc,
 			append([]any{aid, path}, tcArgs...)...).Scan(&content)
 	} else {
-		tc, tcArgs, err := scopeClause(ctx)
-		if err != nil {
-			return "", err
+		tc, tcArgs, tcErr := scopeClause(ctx)
+		if tcErr != nil {
+			return "", tcErr
 		}
 		err = s.db.QueryRowContext(ctx,
 			"SELECT content FROM memory_documents WHERE agent_id = ? AND path = ? AND user_id = ?"+tc,
@@ -169,7 +169,9 @@ func (s *SQLiteMemoryStore) IndexDocument(ctx context.Context, agentID, userID, 
 	}
 
 	// Delete old chunks
-	s.db.ExecContext(ctx, "DELETE FROM memory_chunks WHERE document_id = ?", docID)
+	if _, delErr := s.db.ExecContext(ctx, "DELETE FROM memory_chunks WHERE document_id = ?", docID); delErr != nil {
+		return fmt.Errorf("delete old chunks: %w", delErr)
+	}
 
 	// Resolve chunk config: per-agent override → global default
 	chunkLen, chunkOverlap := s.chunkConfig()
