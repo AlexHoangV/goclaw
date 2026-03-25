@@ -9,6 +9,7 @@ import (
 
 	"github.com/nextlevelbuilder/goclaw/internal/bus"
 	"github.com/nextlevelbuilder/goclaw/internal/config"
+	"github.com/nextlevelbuilder/goclaw/internal/edition"
 	"github.com/nextlevelbuilder/goclaw/internal/store"
 	"github.com/nextlevelbuilder/goclaw/internal/store/pg"
 	"github.com/nextlevelbuilder/goclaw/internal/store/sqlitestore"
@@ -48,6 +49,11 @@ func setupStoresAndTracing(
 			os.Exit(1)
 		}
 		stores = s
+		// SQLite backend auto-defaults to Lite edition unless explicitly overridden.
+		if os.Getenv("GOCLAW_EDITION") == "" {
+			edition.SetCurrent(edition.Lite)
+			slog.Info("edition: lite (auto, sqlite backend)")
+		}
 		slog.Info("storage backend: sqlite", "path", sqlitePath)
 
 	case "postgres":
