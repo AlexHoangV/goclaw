@@ -6,6 +6,7 @@ import (
 	"context"
 	"database/sql"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/google/uuid"
@@ -28,11 +29,11 @@ func (s *SQLiteCronStore) RunJob(ctx context.Context, jobID string, force bool) 
 	}
 
 	if id, parseErr := uuid.Parse(jobID); parseErr == nil {
-		s.db.ExecContext(ctx, "UPDATE cron_jobs SET last_status = 'running', updated_at = ? WHERE id = ?", time.Now(), id)
+		if _, execErr := s.db.ExecContext(ctx, "UPDATE cron_jobs SET last_status = 'running', updated_at = ? WHERE id = ?", time.Now(), id); execErr != nil {
+			slog.Warn("cron: failed to mark job running", "job", jobID, "error", execErr)
+		}
 	}
-	s.mu.Lock()
-	s.cacheLoaded = false
-	s.mu.Unlock()
+	s.InvalidateCache()
 
 	s.emitEvent(store.CronEvent{Action: "running", JobID: job.ID, JobName: job.Name, UserID: job.UserID})
 	s.executeOneJob(*job, handler)
@@ -117,6 +118,9 @@ func (s *SQLiteCronStore) GetRunLog(ctx context.Context, jobID string, limit, of
 			InputTokens:  inputTokens,
 			OutputTokens: outputTokens,
 		})
+	}
+	if rErr := rows.Err(); rErr != nil {
+		slog.Warn("cron: run log iteration error", "error", rErr)
 	}
 	return result, total
 }

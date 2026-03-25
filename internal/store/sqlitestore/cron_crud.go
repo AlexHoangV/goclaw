@@ -78,7 +78,7 @@ func (s *SQLiteCronStore) AddJob(ctx context.Context, name string, schedule stor
 		return nil, fmt.Errorf("create cron job: %w", err)
 	}
 
-	s.cacheLoaded = false
+	s.InvalidateCache()
 	job, _ := s.GetJob(ctx, id.String())
 	return job, nil
 }
@@ -143,6 +143,9 @@ func (s *SQLiteCronStore) ListJobs(ctx context.Context, includeDisabled bool, ag
 		}
 		result = append(result, *job)
 	}
+	if err := rows.Err(); err != nil {
+		slog.Warn("cron: list jobs iteration error", "error", err)
+	}
 	return result
 }
 
@@ -171,7 +174,7 @@ func (s *SQLiteCronStore) RemoveJob(ctx context.Context, jobID string) error {
 	if n, _ := res.RowsAffected(); n == 0 {
 		return fmt.Errorf("job not found")
 	}
-	s.cacheLoaded = false
+	s.InvalidateCache()
 	return nil
 }
 
@@ -200,7 +203,7 @@ func (s *SQLiteCronStore) EnableJob(ctx context.Context, jobID string, enabled b
 	if n, _ := res.RowsAffected(); n == 0 {
 		return fmt.Errorf("job not found")
 	}
-	s.cacheLoaded = false
+	s.InvalidateCache()
 	return nil
 }
 
@@ -351,7 +354,7 @@ func (s *SQLiteCronStore) UpdateJob(ctx context.Context, jobID string, patch sto
 		return nil, execErr
 	}
 
-	s.cacheLoaded = false
+	s.InvalidateCache()
 	job, _ := s.scanJob(ctx, id)
 	return job, nil
 }

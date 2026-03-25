@@ -8,6 +8,7 @@ import (
 	"database/sql"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/google/uuid"
@@ -185,6 +186,9 @@ func (s *SQLitePairingStore) ListPending(ctx context.Context) []store.PairingReq
 		}
 		result = append(result, d)
 	}
+	if err := rows.Err(); err != nil {
+		slog.Warn("pairing: list pending iteration error", "error", err)
+	}
 	if result == nil {
 		return []store.PairingRequestData{}
 	}
@@ -218,6 +222,9 @@ func (s *SQLitePairingStore) ListPaired(ctx context.Context) []store.PairedDevic
 			json.Unmarshal(metaJSON, &d.Metadata)
 		}
 		result = append(result, d)
+	}
+	if err := rows.Err(); err != nil {
+		slog.Warn("pairing: list paired iteration error", "error", err)
 	}
 	if result == nil {
 		return []store.PairedDeviceData{}

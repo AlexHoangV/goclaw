@@ -200,7 +200,7 @@ func (s *SQLiteTeamStore) ListTasks(ctx context.Context, teamID uuid.UUID, order
 	// Scope filter using COALESCE for optional channel/chatID.
 	scopeWhere := "AND (? = '' OR COALESCE(t.channel,'') = ?) AND (? = '' OR COALESCE(t.chat_id,'') = ?)"
 
-	args := []any{teamID, userID, limit + 1, channel, channel, chatID, chatID, offset}
+	args := []any{teamID, userID, userID, channel, channel, chatID, chatID}
 
 	tenantWhere := ""
 	if !store.IsCrossTenant(ctx) {
@@ -211,6 +211,7 @@ func (s *SQLiteTeamStore) ListTasks(ctx context.Context, teamID uuid.UUID, order
 		tenantWhere = " AND t.tenant_id = ?"
 		args = append(args, tid)
 	}
+	args = append(args, limit+1, offset)
 
 	rows, err := s.db.QueryContext(ctx,
 		`SELECT `+taskSelectCols+`
@@ -318,7 +319,7 @@ func (s *SQLiteTeamStore) SearchTasks(ctx context.Context, teamID uuid.UUID, que
 		likeClauses[i] = "(t.subject LIKE ? OR t.description LIKE ?)"
 		args = append(args, pat, pat)
 	}
-	args = append(args, userID)
+	args = append(args, userID, userID)
 
 	tenantWhere := ""
 	if !store.IsCrossTenant(ctx) {

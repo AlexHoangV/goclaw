@@ -52,6 +52,9 @@ func (s *SQLiteCronStore) refreshJobCache() {
 		}
 		s.jobCache = append(s.jobCache, *job)
 	}
+	if err := rows.Err(); err != nil {
+		slog.Warn("cron: cache refresh iteration error", "error", err)
+	}
 	s.cacheLoaded = true
 	s.cacheTime = time.Now()
 }
@@ -112,6 +115,9 @@ func (s *SQLiteCronStore) recomputeStaleJobs() {
 
 		s.db.ExecContext(s.baseCtx, "UPDATE cron_jobs SET next_run_at = ?, updated_at = ? WHERE id = ?", *next, now, id)
 		fixed++
+	}
+	if err := rows.Err(); err != nil {
+		slog.Warn("cron: recompute stale iteration error", "error", err)
 	}
 
 	if fixed > 0 {
