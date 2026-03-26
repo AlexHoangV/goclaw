@@ -225,6 +225,9 @@ func NewManagedResolver(deps ResolverDeps) ResolverFunc {
 		// Expand ~ in workspace path and ensure directory exists.
 		// For non-master tenants, prefix workspace with tenant slug directory.
 		workspace := ag.Workspace
+		if workspace == "" {
+			workspace = deps.Workspace
+		}
 		if workspace != "" {
 			workspace = config.ExpandHome(workspace)
 			if !filepath.IsAbs(workspace) {
