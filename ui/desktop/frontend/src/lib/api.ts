@@ -74,6 +74,10 @@ class ApiClient {
     return this.request<T>('DELETE', path)
   }
 
+  getBaseUrl(): string {
+    return this.baseUrl
+  }
+
   async uploadFile<T = { url: string }>(path: string, file: File): Promise<T> {
     const url = `${this.baseUrl}${path}`
     const form = new FormData()

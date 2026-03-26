@@ -2,9 +2,19 @@ import ReactMarkdown from 'react-markdown'
 import remarkGfm from 'remark-gfm'
 import rehypeSanitize from 'rehype-sanitize'
 import { CodeBlock } from './CodeBlock'
+import { FileButton } from './FileButton'
+import { getApiClient, isApiClientReady } from '../../lib/api'
 
 interface MarkdownRendererProps {
   content: string
+}
+
+function resolveFileUrl(path: string): string {
+  if (path.startsWith('http://') || path.startsWith('https://')) return path
+  if (isApiClientReady()) {
+    return getApiClient().getBaseUrl() + path
+  }
+  return path
 }
 
 export function MarkdownRenderer({ content }: MarkdownRendererProps) {
@@ -32,11 +42,47 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
           )
         },
         p: ({ children }) => <p className="mb-3 last:mb-0">{children}</p>,
-        a: ({ children, href }) => (
-          <a href={href} className="text-accent hover:underline" target="_blank" rel="noopener noreferrer">
-            {children}
-          </a>
-        ),
+        a: ({ children, href }) => {
+          if (href?.includes('/v1/files/')) {
+            const filename = decodeURIComponent(href.split('/').pop() ?? 'file')
+            return <FileButton url={resolveFileUrl(href)} filename={filename} />
+          }
+          return (
+            <a href={href} className="text-accent hover:underline" target="_blank" rel="noopener noreferrer">
+              {children}
+            </a>
+          )
+        },
+        img: ({ src, alt }) => {
+          const resolvedSrc = src?.includes('/v1/files/') ? resolveFileUrl(src) : src
+          const downloadUrl = resolvedSrc
+            ? resolvedSrc.includes('?') ? `${resolvedSrc}&download=true` : `${resolvedSrc}?download=true`
+            : undefined
+          return (
+            <span className="group/img relative inline-block">
+              <img
+                src={resolvedSrc}
+                alt={alt ?? ''}
+                className="max-w-full rounded-lg"
+                loading="lazy"
+              />
+              {downloadUrl && (
+                <a
+                  href={downloadUrl}
+                  download
+                  onClick={(e) => e.stopPropagation()}
+                  className="absolute top-2 right-2 opacity-0 group-hover/img:opacity-100 transition-opacity rounded bg-black/60 p-1.5 text-white hover:bg-black/80"
+                >
+                  <svg className="h-3.5 w-3.5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+                    <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" />
+                    <polyline points="7 10 12 15 17 10" />
+                    <line x1="12" y1="15" x2="12" y2="3" />
+                  </svg>
+                </a>
+              )}
+            </span>
+          )
+        },
         ul: ({ children }) => <ul className="list-disc ml-5 mb-3 space-y-1">{children}</ul>,
         ol: ({ children }) => <ol className="list-decimal ml-5 mb-3 space-y-1">{children}</ol>,
         li: ({ children }) => <li className="text-sm">{children}</li>,

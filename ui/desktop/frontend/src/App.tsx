@@ -11,6 +11,7 @@ import { useSessionStore } from './stores/session-store'
 import { useChatStore } from './stores/chat-store'
 import { ErrorBoundary } from './components/common/ErrorBoundary'
 import { Toaster } from './components/common/Toaster'
+import { SplashScreen } from './components/common/SplashScreen'
 
 function AppReady() {
   const toggleSidebar = useUiStore((s) => s.toggleSidebar)
@@ -50,12 +51,15 @@ function App() {
   const onboarded = useUiStore((s) => s.onboarded)
   const completeOnboarding = useUiStore((s) => s.completeOnboarding)
   const [ready, setReady] = useState(false)
+  const [splashDone, setSplashDone] = useState(false)
 
   useEffect(() => {
     document.documentElement.classList.toggle('dark', theme === 'dark')
   }, [theme])
 
   useEffect(() => {
+    const splashMin = new Promise((r) => setTimeout(r, 2500))
+
     const init = async () => {
       let attempts = 0
       while (attempts < 30) {
@@ -92,18 +96,13 @@ function App() {
         }
       } catch { /* ignore — onboarding wizard will handle */ }
     }
-    init()
+
+    // Wait for both gateway init AND minimum splash duration
+    Promise.all([init(), splashMin]).then(() => setSplashDone(true))
   }, [])
 
-  if (!ready) {
-    return (
-      <div className="h-dvh flex items-center justify-center canvas-bg">
-        <div className="text-center">
-          <div className="w-8 h-8 border-2 border-accent border-t-transparent rounded-full animate-spin mx-auto mb-4" />
-          <p className="text-text-secondary text-sm">Starting gateway...</p>
-        </div>
-      </div>
-    )
+  if (!splashDone) {
+    return <SplashScreen ready={ready} />
   }
 
   if (!onboarded) {
