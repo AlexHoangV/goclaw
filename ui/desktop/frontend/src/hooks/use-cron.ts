@@ -16,7 +16,6 @@ export function useCron(agentId?: string) {
   const [loading, setLoading] = useState(true)
 
   const fetchJobs = useCallback(async () => {
-    setLoading(true)
     try {
       const ws = getWsClient()
       const params: Record<string, unknown> = {}

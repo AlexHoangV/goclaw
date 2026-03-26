@@ -16,7 +16,6 @@ export function useTraces() {
     if (!isApiClientReady()) { setLoading(false); return }
     const currentOffset = reset ? 0 : offset
     if (reset) setOffset(0)
-    setLoading(true)
     try {
       let url = `/v1/traces?limit=${PAGE_SIZE}&offset=${currentOffset}`
       if (agentFilter) url += `&agent_id=${encodeURIComponent(agentFilter)}`
@@ -45,7 +44,6 @@ export function useTraces() {
     if (!isApiClientReady()) return
     const newOffset = offset + PAGE_SIZE
     setOffset(newOffset)
-    setLoading(true)
     try {
       let url = `/v1/traces?limit=${PAGE_SIZE}&offset=${newOffset}`
       if (agentFilter) url += `&agent_id=${encodeURIComponent(agentFilter)}`
