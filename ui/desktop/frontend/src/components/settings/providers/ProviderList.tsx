@@ -6,7 +6,7 @@ import { ConfirmDialog } from '../../common/ConfirmDialog'
 import type { ProviderData, ProviderInput } from '../../../types/provider'
 
 export function ProviderList() {
-  const { providers, loading, createProvider, updateProvider, deleteProvider, verifyProvider } = useProviders()
+  const { providers, loading, createProvider, updateProvider, deleteProvider } = useProviders()
   const [formOpen, setFormOpen] = useState(false)
   const [editingProvider, setEditingProvider] = useState<ProviderData | null>(null)
   const [deletingProvider, setDeletingProvider] = useState<ProviderData | null>(null)
@@ -69,7 +69,6 @@ export function ProviderList() {
         onOpenChange={setFormOpen}
         provider={editingProvider}
         onSubmit={handleSubmit}
-        onVerify={verifyProvider}
       />
 
       <ConfirmDialog

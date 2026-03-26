@@ -9,10 +9,9 @@ interface ProviderFormDialogProps {
   /** If set, editing this provider. Otherwise creating. */
   provider?: ProviderData | null
   onSubmit: (input: ProviderInput) => Promise<void>
-  onVerify?: (input: { provider_type: string; api_base?: string; api_key?: string }) => Promise<{ success: boolean; error?: string }>
 }
 
-export function ProviderFormDialog({ open, onOpenChange, provider, onSubmit, onVerify }: ProviderFormDialogProps) {
+export function ProviderFormDialog({ open, onOpenChange, provider, onSubmit }: ProviderFormDialogProps) {
   const isEditing = !!provider
 
   const [providerType, setProviderType] = useState(provider?.provider_type ?? '')
@@ -21,8 +20,6 @@ export function ProviderFormDialog({ open, onOpenChange, provider, onSubmit, onV
   const [apiKey, setApiKey] = useState('')
   const [enabled, setEnabled] = useState(provider?.enabled ?? true)
   const [loading, setLoading] = useState(false)
-  const [verifying, setVerifying] = useState(false)
-  const [verifyResult, setVerifyResult] = useState<{ success: boolean; error?: string } | null>(null)
   const [error, setError] = useState('')
 
   // Reset form when dialog opens/closes or provider changes
@@ -34,7 +31,6 @@ export function ProviderFormDialog({ open, onOpenChange, provider, onSubmit, onV
       setApiKey('')
       setEnabled(provider?.enabled ?? true)
       setError('')
-      setVerifyResult(null)
     }
   }, [open, provider])
 
@@ -70,24 +66,6 @@ export function ProviderFormDialog({ open, onOpenChange, provider, onSubmit, onV
       setError(err instanceof Error ? err.message : 'Failed to save provider')
     } finally {
       setLoading(false)
-    }
-  }
-
-  const handleVerify = async () => {
-    if (!onVerify) return
-    setVerifying(true)
-    setVerifyResult(null)
-    try {
-      const res = await onVerify({
-        provider_type: providerType,
-        api_base: apiBase || undefined,
-        api_key: apiKey || provider?.api_key || undefined,
-      })
-      setVerifyResult(res)
-    } catch (err) {
-      setVerifyResult({ success: false, error: err instanceof Error ? err.message : 'Verify failed' })
-    } finally {
-      setVerifying(false)
     }
   }
 
@@ -160,24 +138,6 @@ export function ProviderFormDialog({ open, onOpenChange, provider, onSubmit, onV
           />
           <span className="text-xs text-text-secondary">Enabled</span>
         </label>
-
-        {/* Verify button + result */}
-        {onVerify && providerType && (
-          <div className="space-y-1">
-            <button
-              onClick={handleVerify}
-              disabled={verifying || !providerType}
-              className="text-xs text-accent hover:underline disabled:opacity-50"
-            >
-              {verifying ? 'Verifying...' : 'Test Connection'}
-            </button>
-            {verifyResult && (
-              <p className={`text-xs ${verifyResult.success ? 'text-success' : 'text-error'}`}>
-                {verifyResult.success ? 'Connection successful' : verifyResult.error}
-              </p>
-            )}
-          </div>
-        )}
 
         {error && <p className="text-xs text-error">{error}</p>}
 
