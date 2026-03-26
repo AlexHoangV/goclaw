@@ -48,6 +48,10 @@ CREATE TABLE IF NOT EXISTS tenants (
 CREATE INDEX IF NOT EXISTS idx_tenants_slug ON tenants(slug);
 CREATE INDEX IF NOT EXISTS idx_tenants_status ON tenants(status) WHERE status = 'active';
 
+-- Seed master tenant (required by all FK references)
+INSERT OR IGNORE INTO tenants (id, name, slug, status)
+VALUES ('0193a5b0-7000-7000-8000-000000000001', 'Master', 'master', 'active');
+
 -- ============================================================
 -- Table: tenant_users
 -- ============================================================

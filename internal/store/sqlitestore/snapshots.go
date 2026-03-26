@@ -74,7 +74,7 @@ func (s *SQLiteSnapshotStore) upsertBatch(ctx context.Context, snapshots []store
 		memory_docs, memory_chunks, kg_entities, kg_relations,
 		tenant_id
 	) VALUES ` + strings.Join(vals, ", ") + `
-	ON CONFLICT (bucket_hour, COALESCE(agent_id, '00000000-0000-0000-0000-000000000000'), provider, model, channel, tenant_id)
+	ON CONFLICT (bucket_hour, COALESCE(agent_id, '00000000-0000-0000-0000-000000000000'), COALESCE(provider, ''), COALESCE(model, ''), COALESCE(channel, ''), tenant_id)
 	DO UPDATE SET
 		input_tokens        = excluded.input_tokens,
 		output_tokens       = excluded.output_tokens,
@@ -249,15 +249,15 @@ func (s *SQLiteSnapshotStore) GetBreakdown(ctx context.Context, q store.Snapshot
 }
 
 func (s *SQLiteSnapshotStore) GetLatestBucket(ctx context.Context) (*time.Time, error) {
-	var t sql.NullTime
-	err := s.db.QueryRowContext(ctx, `SELECT MAX(bucket_hour) FROM usage_snapshots`).Scan(&t)
+	var nt nullSqliteTime
+	err := s.db.QueryRowContext(ctx, `SELECT MAX(bucket_hour) FROM usage_snapshots`).Scan(&nt)
 	if err != nil {
 		return nil, fmt.Errorf("get latest bucket: %w", err)
 	}
-	if !t.Valid {
+	if !nt.Valid {
 		return nil, nil
 	}
-	return &t.Time, nil
+	return &nt.Time, nil
 }
 
 // buildSnapshotWhere builds a WHERE clause with ? placeholders for SQLite.

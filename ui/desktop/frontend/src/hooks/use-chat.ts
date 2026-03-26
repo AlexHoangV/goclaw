@@ -2,7 +2,6 @@ import { useEffect, useRef, useCallback } from 'react'
 import { getWsClient } from '../lib/ws'
 import { useChatStore } from '../stores/chat-store'
 import { useSessionStore } from '../stores/session-store'
-import type { Message } from '../stores/chat-store'
 
 // RAF batching — prevents 100+ setState calls/sec during streaming
 function useStreamBatcher(onFlush: (text: string) => void) {
@@ -228,10 +227,12 @@ export function useChat() {
         const result = (await ws.call('chat.history', { sessionKey })) as {
           messages?: Array<{
             id?: string
-            role: Message['role']
+            role: string
             content?: string
             thinking?: string
             timestamp?: number
+            tool_call_id?: string
+            is_error?: boolean
             tool_calls?: Array<{
               id: string
               function?: { name: string; arguments?: Record<string, unknown> }
@@ -247,19 +248,40 @@ export function useChat() {
           }>
         }
         if (result?.messages) {
+          // Build tool result map for enriching assistant tool_calls
+          const toolResultMap = new Map<string, { content: string; isError: boolean }>()
+          for (const m of result.messages) {
+            if (m.role === 'tool' && m.tool_call_id) {
+              toolResultMap.set(m.tool_call_id, {
+                content: m.content ?? '',
+                isError: !!m.is_error,
+              })
+            }
+          }
+
+          // Filter: only user + assistant messages, exclude internal system nudges
+          const filtered = result.messages.filter((m) =>
+            (m.role === 'user' || m.role === 'assistant') &&
+            !(m.role === 'user' && m.content?.startsWith('[System]'))
+          )
           setMessages(
-            result.messages.map((m) => ({
+            filtered.map((m) => ({
               id: m.id ?? crypto.randomUUID(),
-              role: m.role,
+              role: m.role as 'user' | 'assistant',
               content: m.content ?? '',
               timestamp: m.timestamp ?? Date.now(),
               thinkingText: m.thinking,
-              toolCalls: m.tool_calls?.map((tc) => ({
-                toolId: tc.id,
-                toolName: tc.function?.name ?? tc.name ?? 'unknown',
-                arguments: tc.function?.arguments ?? tc.input ?? {},
-                state: 'completed' as const,
-              })),
+              toolCalls: m.tool_calls?.map((tc) => {
+                const toolResult = toolResultMap.get(tc.id)
+                return {
+                  toolId: tc.id,
+                  toolName: tc.function?.name ?? tc.name ?? 'unknown',
+                  arguments: tc.function?.arguments ?? tc.input ?? {},
+                  state: (toolResult?.isError ? 'error' : 'completed') as 'error' | 'completed',
+                  result: toolResult && !toolResult.isError ? toolResult.content : undefined,
+                  error: toolResult?.isError ? toolResult.content : undefined,
+                }
+              }),
               media: m.media_refs?.map((ref) => ({
                 type: ref.mime_type ?? ref.content_type ?? 'image',
                 url: ref.path ?? ref.url ?? '',
@@ -273,6 +295,32 @@ export function useChat() {
     },
     [ws, setMessages],
   )
+
+  // Reset streaming state + load history when session changes.
+  // Messages are NOT cleared here — loadHistory() replaces them atomically.
+  // Clearing would race with sendMessage's auto-session-creation flow.
+  const prevSessionRef = useRef(activeSessionKey)
+  useEffect(() => {
+    if (activeSessionKey === prevSessionRef.current) return
+    prevSessionRef.current = activeSessionKey
+
+    // Reset streaming state only (not messages)
+    chunkBatcher.flush()
+    thinkingBatcher.flush()
+    currentRunIdRef.current = null
+
+    if (!activeSessionKey) {
+      useChatStore.getState().clear()
+      return
+    }
+
+    // Load history — setMessages() atomically replaces, no flash
+    let cancelled = false
+    loadHistory(activeSessionKey).then(() => {
+      if (cancelled) return
+    })
+    return () => { cancelled = true }
+  }, [activeSessionKey, loadHistory, chunkBatcher, thinkingBatcher])
 
   return {
     messages,

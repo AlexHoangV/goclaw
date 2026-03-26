@@ -1,75 +1,115 @@
 import { useState } from 'react'
 import type { ToolCall } from '../../stores/chat-store'
 
-interface ToolCallBlockProps {
-  toolCall: ToolCall
+// Inline SVG icons (no lucide-react dependency)
+function WrenchIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <path d="M14.7 6.3a1 1 0 0 0 0 1.4l1.6 1.6a1 1 0 0 0 1.4 0l3.77-3.77a6 6 0 0 1-7.94 7.94l-6.91 6.91a2.12 2.12 0 0 1-3-3l6.91-6.91a6 6 0 0 1 7.94-7.94l-3.76 3.76z" />
+    </svg>
+  )
 }
 
-export function ToolCallBlock({ toolCall }: ToolCallBlockProps) {
-  const [expanded, setExpanded] = useState(false)
+function ZapIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <polygon points="13 2 3 14 12 14 11 22 21 10 12 10 13 2" />
+    </svg>
+  )
+}
 
-  const statusColor = {
-    calling: 'text-warning',
-    completed: 'text-success',
-    error: 'text-error',
-  }[toolCall.state]
+function AlertIcon({ className }: { className?: string }) {
+  return (
+    <svg className={className} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
+      <path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3Z" />
+      <line x1="12" y1="9" x2="12" y2="13" /><line x1="12" y1="17" x2="12.01" y2="17" />
+    </svg>
+  )
+}
+
+const isSkillTool = (name: string) => name === 'use_skill'
+
+/** Extract first meaningful arg (path/command/query/url/name), truncate to 77 chars. */
+function buildToolSummary(args: Record<string, unknown>): string | null {
+  const key = args.path ?? args.command ?? args.query ?? args.url ?? args.name
+  if (typeof key === 'string') return key.length > 80 ? key.slice(0, 77) + '...' : key
+  return null
+}
+
+function ToolIcon({ state, isSkill }: { state: ToolCall['state']; isSkill: boolean }) {
+  const cls = 'h-3.5 w-3.5 shrink-0'
+  if (isSkill) {
+    if (state === 'calling') return <ZapIcon className={`${cls} animate-pulse text-amber-500`} />
+    if (state === 'error') return <AlertIcon className={`${cls} text-error`} />
+    return <ZapIcon className={`${cls} text-amber-500`} />
+  }
+  if (state === 'calling') return <span className={`${cls} inline-block border-2 border-blue-500 border-t-transparent rounded-full animate-spin`} />
+  if (state === 'error') return <AlertIcon className={`${cls} text-error`} />
+  return <WrenchIcon className={`${cls} text-blue-500`} />
+}
+
+function PhaseLabel({ state, isSkill }: { state: ToolCall['state']; isSkill: boolean }) {
+  const label = isSkill
+    ? { calling: 'Activating...', completed: 'Activated', error: 'Failed' }[state]
+    : { calling: 'Running...', completed: 'Done', error: 'Failed' }[state]
+  const color = state === 'error' ? 'text-error' : 'text-blue-500'
+  return <span className={`text-[11px] ${color}`}>{label}</span>
+}
+
+interface ToolCallBlockProps {
+  toolCall: ToolCall
+  /** Compact mode — less padding, used inside grouped containers */
+  compact?: boolean
+}
+
+export function ToolCallBlock({ toolCall, compact }: ToolCallBlockProps) {
+  const [expanded, setExpanded] = useState(false)
+  const skill = isSkillTool(toolCall.toolName)
+  const displayName = skill
+    ? `skill: ${(toolCall.arguments?.name as string) || 'unknown'}`
+    : toolCall.toolName
+  const summary = buildToolSummary(toolCall.arguments)
+  const canExpand = Object.keys(toolCall.arguments).length > 0 || toolCall.result || toolCall.error
 
   return (
-    <div className="mb-2 rounded-lg border border-border overflow-hidden">
+    <div className={compact ? '' : 'rounded-md border border-border bg-surface-tertiary/30'}>
       <button
-        onClick={() => setExpanded(!expanded)}
-        className="w-full flex items-center gap-2 px-3 py-2 bg-surface-secondary hover:bg-surface-tertiary transition-colors text-left"
+        type="button"
+        onClick={() => canExpand && setExpanded(!expanded)}
+        disabled={!canExpand}
+        className="flex w-full items-center gap-2 px-3 py-1.5 text-left text-xs hover:bg-surface-tertiary/50 transition-colors"
       >
-        <svg className="w-3.5 h-3.5 text-text-muted shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.066 2.573c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.573 1.066c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.066-2.573c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z" />
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
-        </svg>
-
-        <span className="text-xs font-mono text-text-primary flex-1 truncate">
-          {toolCall.toolName}
+        <ToolIcon state={toolCall.state} isSkill={skill} />
+        <span className="font-medium text-text-primary shrink-0">{displayName}</span>
+        {summary && <span className="truncate text-text-muted ml-1">{summary}</span>}
+        <span className="ml-auto flex items-center gap-1 shrink-0">
+          <PhaseLabel state={toolCall.state} isSkill={skill} />
+          {canExpand && (
+            <svg className={`w-3 h-3 text-text-muted transition-transform ${expanded ? 'rotate-90' : ''}`} fill="none" viewBox="0 0 24 24" stroke="currentColor">
+              <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
+            </svg>
+          )}
         </span>
-
-        <span className={`text-xs ${statusColor}`}>
-          {toolCall.state === 'calling' ? (
-            <span className="inline-block w-3 h-3 border border-current border-t-transparent rounded-full animate-spin" />
-          ) : toolCall.state === 'completed' ? '✓' : '✕'}
-        </span>
-
-        <svg
-          className={`w-3 h-3 text-text-muted transition-transform ${expanded ? 'rotate-90' : ''}`}
-          fill="none"
-          viewBox="0 0 24 24"
-          stroke="currentColor"
-        >
-          <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 5l7 7-7 7" />
-        </svg>
       </button>
 
-      {expanded && (
-        <div className="px-3 py-2 border-t border-border bg-surface-primary">
+      {expanded && canExpand && (
+        <div className="border-t border-border px-3 py-2 space-y-2">
+          {toolCall.error && (
+            <pre className="text-xs text-error whitespace-pre-wrap">{toolCall.error}</pre>
+          )}
           {Object.keys(toolCall.arguments).length > 0 && (
-            <div className="mb-2">
-              <p className="text-[10px] text-text-muted mb-1 uppercase tracking-wider">Arguments</p>
-              <pre className="text-xs font-mono text-text-secondary whitespace-pre-wrap break-all">
+            <div>
+              <div className="text-[10px] font-semibold uppercase text-text-muted mb-0.5">Arguments</div>
+              <pre className="whitespace-pre-wrap text-[11px] font-mono text-text-secondary bg-surface-primary rounded p-1.5 max-h-40 overflow-y-auto">
                 {JSON.stringify(toolCall.arguments, null, 2)}
               </pre>
             </div>
           )}
-
           {toolCall.result && (
             <div>
-              <p className="text-[10px] text-text-muted mb-1 uppercase tracking-wider">Result</p>
-              <pre className="text-xs font-mono text-text-secondary whitespace-pre-wrap break-all max-h-40 overflow-y-auto">
+              <div className="text-[10px] font-semibold uppercase text-text-muted mb-0.5">Result</div>
+              <pre className="whitespace-pre-wrap text-[11px] font-mono text-text-secondary bg-surface-primary rounded p-1.5 max-h-40 overflow-y-auto">
                 {toolCall.result}
-              </pre>
-            </div>
-          )}
-
-          {toolCall.error && (
-            <div>
-              <p className="text-[10px] text-error mb-1 uppercase tracking-wider">Error</p>
-              <pre className="text-xs font-mono text-error whitespace-pre-wrap">
-                {toolCall.error}
               </pre>
             </div>
           )}

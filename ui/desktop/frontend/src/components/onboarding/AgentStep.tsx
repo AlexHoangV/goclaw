@@ -1,6 +1,7 @@
 import { useState, useMemo, useEffect } from 'react'
 import { getApiClient } from '../../lib/api'
 import { slugify } from '../../constants/providers'
+import { SummoningModal } from './SummoningModal'
 import type { ProviderData } from '../../types/provider'
 
 interface AgentPreset {
@@ -69,6 +70,7 @@ export function AgentStep({ provider, model, onBack, onComplete }: AgentStepProp
   const [description, setDescription] = useState(PRESETS[0].prompt)
   const [loading, setLoading] = useState(false)
   const [error, setError] = useState('')
+  const [createdAgent, setCreatedAgent] = useState<{ id: string; name: string } | null>(null)
 
   const displayName = useMemo(() => {
     if (selectedPresetIdx >= 0 && PRESETS[selectedPresetIdx]) {
@@ -105,7 +107,7 @@ export function AgentStep({ provider, model, onBack, onComplete }: AgentStepProp
       if (description.trim()) otherConfig.description = description.trim()
       if (selectedEmoji) otherConfig.emoji = selectedEmoji
 
-      await getApiClient().post('/v1/agents', {
+      const result = await getApiClient().post<{ id: string }>('/v1/agents', {
         agent_key: agentKey,
         display_name: displayName.trim() || undefined,
         provider: provider.name,
@@ -114,7 +116,7 @@ export function AgentStep({ provider, model, onBack, onComplete }: AgentStepProp
         is_default: true,
         other_config: Object.keys(otherConfig).length > 0 ? otherConfig : undefined,
       })
-      onComplete()
+      setCreatedAgent({ id: result.id, name: displayName.trim() || agentKey })
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to create agent')
     } finally {
@@ -123,6 +125,17 @@ export function AgentStep({ provider, model, onBack, onComplete }: AgentStepProp
   }
 
   const providerLabel = provider.display_name || provider.name
+
+  // Show summoning modal after agent creation
+  if (createdAgent) {
+    return (
+      <SummoningModal
+        agentId={createdAgent.id}
+        agentName={createdAgent.name}
+        onContinue={onComplete}
+      />
+    )
+  }
 
   return (
     <div className="bg-surface-secondary border border-border rounded-xl p-6 space-y-4">

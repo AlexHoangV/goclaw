@@ -61,8 +61,21 @@ function App() {
       const wsUrl = gatewayUrl.replace(/^http/, 'ws') + '/ws'
 
       initWsClient(wsUrl, token)
-      initApiClient(gatewayUrl, token)
+      const api = initApiClient(gatewayUrl, token)
       setReady(true)
+
+      // Auto-detect empty DB → reset onboarded flag (handles DB deletion)
+      try {
+        const [pRes, aRes] = await Promise.allSettled([
+          api.get<{ providers?: unknown[] | null }>('/v1/providers'),
+          api.get<{ agents?: unknown[] | null }>('/v1/agents'),
+        ])
+        const hasProviders = pRes.status === 'fulfilled' && (pRes.value.providers?.length ?? 0) > 0
+        const hasAgents = aRes.status === 'fulfilled' && (aRes.value.agents?.length ?? 0) > 0
+        if (!hasProviders && !hasAgents) {
+          useUiStore.getState().resetOnboarding()
+        }
+      } catch { /* ignore — onboarding wizard will handle */ }
     }
     init()
   }, [])

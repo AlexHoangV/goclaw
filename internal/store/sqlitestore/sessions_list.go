@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"strings"
-	"time"
 
 	"github.com/google/uuid"
 
@@ -80,10 +79,10 @@ func (s *SQLiteSessionStore) List(ctx context.Context, agentID string) []store.S
 	for rows.Next() {
 		var key string
 		var msgsJSON []byte
-		var createdAt, updatedAt time.Time
+		stCreated, stUpdated := scanTimePair()
 		var label, channel, userID *string
 		var metaJSON []byte
-		if err := rows.Scan(&key, &msgsJSON, &createdAt, &updatedAt, &label, &channel, &userID, &metaJSON); err != nil {
+		if err := rows.Scan(&key, &msgsJSON, stCreated, stUpdated, &label, &channel, &userID, &metaJSON); err != nil {
 			continue
 		}
 		var msgs []providers.Message
@@ -95,8 +94,8 @@ func (s *SQLiteSessionStore) List(ctx context.Context, agentID string) []store.S
 		result = append(result, store.SessionInfo{
 			Key:          key,
 			MessageCount: len(msgs),
-			Created:      createdAt,
-			Updated:      updatedAt,
+			Created:      stCreated.Time,
+			Updated:      stUpdated.Time,
 			Label:        derefStr(label),
 			Channel:      derefStr(channel),
 			UserID:       derefStr(userID),
@@ -136,10 +135,10 @@ func (s *SQLiteSessionStore) ListPaged(ctx context.Context, opts store.SessionLi
 	for rows.Next() {
 		var key string
 		var msgCount int
-		var createdAt, updatedAt time.Time
+		stCreated, stUpdated := scanTimePair()
 		var label, channel, userID *string
 		var metaJSON []byte
-		if err := rows.Scan(&key, &msgCount, &createdAt, &updatedAt, &label, &channel, &userID, &metaJSON); err != nil {
+		if err := rows.Scan(&key, &msgCount, stCreated, stUpdated, &label, &channel, &userID, &metaJSON); err != nil {
 			continue
 		}
 		var meta map[string]string
@@ -149,8 +148,8 @@ func (s *SQLiteSessionStore) ListPaged(ctx context.Context, opts store.SessionLi
 		result = append(result, store.SessionInfo{
 			Key:          key,
 			MessageCount: msgCount,
-			Created:      createdAt,
-			Updated:      updatedAt,
+			Created:      stCreated.Time,
+			Updated:      stUpdated.Time,
 			Label:        derefStr(label),
 			Channel:      derefStr(channel),
 			UserID:       derefStr(userID),
@@ -203,14 +202,14 @@ func (s *SQLiteSessionStore) ListPagedRich(ctx context.Context, opts store.Sessi
 	for rows.Next() {
 		var key string
 		var msgCount int
-		var createdAt, updatedAt time.Time
+		stCreated, stUpdated := scanTimePair()
 		var label, channel, userID *string
 		var metaJSON []byte
 		var model, provider *string
 		var inputTokens, outputTokens int64
 		var agentName string
 		var estimatedTokens, contextWindow, compactionCount int
-		if err := rows.Scan(&key, &msgCount, &createdAt, &updatedAt, &label, &channel, &userID, &metaJSON,
+		if err := rows.Scan(&key, &msgCount, stCreated, stUpdated, &label, &channel, &userID, &metaJSON,
 			&model, &provider, &inputTokens, &outputTokens, &agentName,
 			&estimatedTokens, &contextWindow, &compactionCount); err != nil {
 			continue
@@ -223,8 +222,8 @@ func (s *SQLiteSessionStore) ListPagedRich(ctx context.Context, opts store.Sessi
 			SessionInfo: store.SessionInfo{
 				Key:          key,
 				MessageCount: msgCount,
-				Created:      createdAt,
-				Updated:      updatedAt,
+				Created:      stCreated.Time,
+				Updated:      stUpdated.Time,
 				Label:        derefStr(label),
 				Channel:      derefStr(channel),
 				UserID:       derefStr(userID),
