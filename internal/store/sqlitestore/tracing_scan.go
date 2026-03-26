@@ -16,7 +16,7 @@ func scanTraceRow(row *sql.Row) (*store.TraceData, error) {
 	var d store.TraceData
 	var parentTraceID, agentID, teamID *uuid.UUID
 	var userID, sessionKey, runID, name, channel, inputPreview, outputPreview, errStr *string
-	var endTime *time.Time
+	var endTime nullSqliteTime
 	var durationMS *int
 	var metadata *[]byte
 	var tags []byte
@@ -31,7 +31,11 @@ func scanTraceRow(row *sql.Row) (*store.TraceData, error) {
 	}
 	d.StartTime = startTime.Time
 	d.CreatedAt = createdAt.Time
-	applyTraceNullables(&d, parentTraceID, agentID, teamID, userID, sessionKey, runID, name, channel, inputPreview, outputPreview, errStr, endTime, durationMS, metadata, tags)
+	var endTimePtr *time.Time
+	if endTime.Valid {
+		endTimePtr = &endTime.Time
+	}
+	applyTraceNullables(&d, parentTraceID, agentID, teamID, userID, sessionKey, runID, name, channel, inputPreview, outputPreview, errStr, endTimePtr, durationMS, metadata, tags)
 	return &d, nil
 }
 
@@ -41,7 +45,7 @@ func scanTraceRows(rows *sql.Rows) ([]store.TraceData, error) {
 		var d store.TraceData
 		var parentTraceID, agentID, teamID *uuid.UUID
 		var userID, sessionKey, runID, name, channel, inputPreview, outputPreview, errStr *string
-		var endTime *time.Time
+		var endTime nullSqliteTime
 		var durationMS *int
 		var metadata *[]byte
 		var tags []byte
@@ -56,7 +60,11 @@ func scanTraceRows(rows *sql.Rows) ([]store.TraceData, error) {
 		}
 		d.StartTime = startTime.Time
 		d.CreatedAt = createdAt.Time
-		applyTraceNullables(&d, parentTraceID, agentID, teamID, userID, sessionKey, runID, name, channel, inputPreview, outputPreview, errStr, endTime, durationMS, metadata, tags)
+		var endTimePtr *time.Time
+	if endTime.Valid {
+		endTimePtr = &endTime.Time
+	}
+	applyTraceNullables(&d, parentTraceID, agentID, teamID, userID, sessionKey, runID, name, channel, inputPreview, outputPreview, errStr, endTimePtr, durationMS, metadata, tags)
 		result = append(result, d)
 	}
 	return result, rows.Err()

@@ -6,7 +6,6 @@ import (
 	"context"
 	"log/slog"
 	"strings"
-	"time"
 
 	"github.com/google/uuid"
 
@@ -60,13 +59,13 @@ func (s *SQLiteTracingStore) GetTraceSpans(ctx context.Context, traceID uuid.UUI
 		var parentSpanID, agentID, teamID *uuid.UUID
 		var name, errStr, level, model, provider, finishReason, toolName, toolCallID, inputPreview, outputPreview *string
 		var status *string
-		var endTime *time.Time
+		var endTimeSt nullSqliteTime
 		var durationMS, inputTokens, outputTokens *int
 		var modelParams, metadata *[]byte
 		var startTime, createdAt sqliteTime
 
 		if err := rows.Scan(&d.ID, &d.TraceID, &parentSpanID, &agentID, &d.SpanType, &name,
-			&startTime, &endTime, &durationMS, &status, &errStr, &level,
+			&startTime, &endTimeSt, &durationMS, &status, &errStr, &level,
 			&model, &provider, &inputTokens, &outputTokens, &finishReason,
 			&modelParams, &toolName, &toolCallID, &inputPreview, &outputPreview,
 			&metadata, &teamID, &createdAt); err != nil {
@@ -80,7 +79,9 @@ func (s *SQLiteTracingStore) GetTraceSpans(ctx context.Context, traceID uuid.UUI
 		d.AgentID = agentID
 		d.TeamID = teamID
 		d.Name = derefStr(name)
-		d.EndTime = endTime
+		if endTimeSt.Valid {
+			d.EndTime = &endTimeSt.Time
+		}
 		d.Status = derefStr(status)
 		d.Level = derefStr(level)
 		if modelParams != nil {
