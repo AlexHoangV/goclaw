@@ -6,6 +6,7 @@ import (
 	"context"
 	"encoding/json"
 	"fmt"
+	"log/slog"
 	"time"
 
 	"github.com/google/uuid"
@@ -66,10 +67,20 @@ func (s *SQLiteMCPServerStore) ListAgentGrants(ctx context.Context, agentID uuid
 	var result []store.MCPAgentGrant
 	for rows.Next() {
 		var g store.MCPAgentGrant
+		var toolAllow, toolDeny, configOverrides *string
 		var createdAt sqliteTime
 		if err := rows.Scan(&g.ID, &g.ServerID, &g.AgentID, &g.Enabled,
-			&g.ToolAllow, &g.ToolDeny, &g.ConfigOverrides, &g.GrantedBy, &createdAt); err != nil {
+			&toolAllow, &toolDeny, &configOverrides, &g.GrantedBy, &createdAt); err != nil {
 			continue
+		}
+		if toolAllow != nil {
+			g.ToolAllow = json.RawMessage(*toolAllow)
+		}
+		if toolDeny != nil {
+			g.ToolDeny = json.RawMessage(*toolDeny)
+		}
+		if configOverrides != nil {
+			g.ConfigOverrides = json.RawMessage(*configOverrides)
 		}
 		g.CreatedAt = createdAt.Time
 		result = append(result, g)
@@ -96,11 +107,16 @@ func (s *SQLiteMCPServerStore) ListServerGrants(ctx context.Context, serverID uu
 	result := make([]store.MCPAgentGrant, 0)
 	for rows.Next() {
 		var g store.MCPAgentGrant
+		var toolAllow, toolDeny, configOverrides string
 		var createdAt sqliteTime
 		if err := rows.Scan(&g.ID, &g.ServerID, &g.AgentID, &g.Enabled,
-			&g.ToolAllow, &g.ToolDeny, &g.ConfigOverrides, &g.GrantedBy, &createdAt); err != nil {
+			&toolAllow, &toolDeny, &configOverrides, &g.GrantedBy, &createdAt); err != nil {
+			slog.Warn("mcp.list_server_grants.scan", "error", err)
 			continue
 		}
+		g.ToolAllow = json.RawMessage(toolAllow)
+		g.ToolDeny = json.RawMessage(toolDeny)
+		g.ConfigOverrides = json.RawMessage(configOverrides)
 		g.CreatedAt = createdAt.Time
 		result = append(result, g)
 	}

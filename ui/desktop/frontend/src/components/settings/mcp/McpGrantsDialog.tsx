@@ -26,7 +26,7 @@ export function McpGrantsDialog({ open, onOpenChange, server, agents, onLoadGran
       const g = await onLoadGrants(server.id)
       setGrants(g)
     } catch (err) {
-      console.error('Failed to load grants:', err)
+      console.error('Failed to load MCP grants:', err)
     } finally {
       setLoading(false)
     }
@@ -55,8 +55,10 @@ export function McpGrantsDialog({ open, onOpenChange, server, agents, onLoadGran
     try {
       await onGrant(server.id, selectedAgent)
       setSelectedAgent('')
-      await refresh()
+      const updated = await onLoadGrants(server.id)
+      setGrants(updated)
     } catch (err) {
+      console.error('Failed to grant MCP access:', err)
       setError((err as Error).message || 'Failed to grant')
     } finally {
       setGranting(false)
@@ -144,7 +146,7 @@ export function McpGrantsDialog({ open, onOpenChange, server, agents, onLoadGran
               <button
                 onClick={handleGrant}
                 disabled={!selectedAgent || granting}
-                className="bg-accent text-white rounded-lg px-3 py-2 text-xs hover:bg-accent-hover disabled:opacity-50 transition-colors shrink-0"
+                className="bg-accent text-white rounded-lg px-4 py-2.5 text-xs hover:bg-accent-hover disabled:opacity-50 transition-colors shrink-0"
               >
                 {granting ? 'Granting...' : 'Grant'}
               </button>

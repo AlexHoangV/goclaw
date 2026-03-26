@@ -113,6 +113,24 @@ func scanJSONStringArray(data []byte, dest *[]string) {
 	_ = json.Unmarshal(data, dest)
 }
 
+// sqliteVal marshals complex Go types (maps, slices) to JSON strings
+// since the SQLite driver cannot serialize them directly.
+func sqliteVal(v any) any {
+	if v == nil {
+		return nil
+	}
+	switch v.(type) {
+	case string, int, int64, float64, bool, time.Time, []byte, json.RawMessage:
+		return v
+	}
+	// For maps, slices, etc. — marshal to JSON string.
+	b, err := json.Marshal(v)
+	if err != nil {
+		return nil
+	}
+	return string(b)
+}
+
 // --- Dynamic UPDATE helper ---
 
 // execMapUpdate builds and runs a dynamic UPDATE with ? placeholders.
@@ -128,7 +146,7 @@ func execMapUpdate(ctx context.Context, db *sql.DB, table string, id uuid.UUID, 
 			return fmt.Errorf("invalid column name: %q", col)
 		}
 		setClauses = append(setClauses, col+" = ?")
-		args = append(args, val)
+		args = append(args, sqliteVal(val))
 	}
 	// Auto-set updated_at for tables that have the column.
 	if _, ok := updates["updated_at"]; !ok && tableHasUpdatedAt(table) {
@@ -188,7 +206,7 @@ func execMapUpdateWhereTenant(ctx context.Context, db *sql.DB, table string, upd
 			return fmt.Errorf("invalid column name: %q", col)
 		}
 		setClauses = append(setClauses, col+" = ?")
-		args = append(args, val)
+		args = append(args, sqliteVal(val))
 	}
 	if _, ok := updates["updated_at"]; !ok && tableHasUpdatedAt(table) {
 		setClauses = append(setClauses, "updated_at = ?")

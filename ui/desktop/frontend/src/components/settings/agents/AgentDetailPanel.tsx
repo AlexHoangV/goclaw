@@ -3,6 +3,7 @@ import { PersonalitySection } from './PersonalitySection'
 import { ModelBudgetSection } from './ModelBudgetSection'
 import { EvolutionSection } from './EvolutionSection'
 import { AgentSkillsSection } from './AgentSkillsSection'
+import { AgentMcpSection } from './AgentMcpSection'
 import { AgentFilesTab } from './AgentFilesTab'
 import { ConfirmDialog } from '../../common/ConfirmDialog'
 import type { AgentData } from '../../../types/agent'
@@ -151,6 +152,8 @@ export function AgentDetailPanel({ agent, onSave, onResummon, onClose }: AgentDe
             )}
             <hr className="border-border" />
             <AgentSkillsSection agentId={agent.id} />
+            <hr className="border-border" />
+            <AgentMcpSection agentId={agent.id} />
           </div>
         ) : (
           <div className="max-w-4xl mx-auto px-4 py-6">
