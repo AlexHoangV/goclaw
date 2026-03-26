@@ -286,8 +286,10 @@ export function useChat() {
               input?: Record<string, unknown>
             }>
             media_refs?: Array<{
+              id?: string
               mime_type?: string
               content_type?: string
+              kind?: string
               path?: string
               url?: string
             }>
@@ -330,7 +332,7 @@ export function useChat() {
               }),
               media: m.media_refs?.map((ref) => ({
                 type: ref.mime_type ?? ref.content_type ?? 'image',
-                url: toFileUrl(ref.path ?? ref.url ?? ''),
+                url: toFileUrl(ref.path ?? ref.id ?? ref.url ?? ''),
               })),
             })),
           )

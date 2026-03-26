@@ -1,5 +1,6 @@
 import { useEffect, useCallback } from 'react'
 import { useTranslation } from 'react-i18next'
+import { AuthImage, downloadFile } from './AuthImage'
 
 export interface LightboxImage {
   src: string
@@ -50,18 +51,16 @@ export function ImageLightbox(props: ImageLightboxProps) {
     >
       {/* Close + Download toolbar */}
       <div className="absolute top-4 right-4 flex items-center gap-2">
-        <a
-          href={current.src}
-          download
-          onClick={(e) => e.stopPropagation()}
+        <button
+          type="button"
+          onClick={(e) => { e.stopPropagation(); downloadFile(current.src, current.src.split('/').pop()?.split('?')[0] ?? 'image') }}
           className={btnClass}
           title={t('download')}
         >
-          {/* Download icon */}
           <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
             <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4" /><polyline points="7 10 12 15 17 10" /><line x1="12" y1="15" x2="12" y2="3" />
           </svg>
-        </a>
+        </button>
         <button type="button" onClick={onClose} className={btnClass}>
           {/* X icon */}
           <svg className="h-5 w-5" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
@@ -97,12 +96,13 @@ export function ImageLightbox(props: ImageLightboxProps) {
       )}
 
       {/* Image */}
-      <img
-        src={current.src}
-        alt={current.alt ?? 'image'}
-        className="max-h-[85vh] max-w-[90vw] rounded-lg object-contain"
-        onClick={(e) => e.stopPropagation()}
-      />
+      <span onClick={(e) => e.stopPropagation()}>
+        <AuthImage
+          src={current.src}
+          alt={current.alt ?? 'image'}
+          className="max-h-[85vh] max-w-[90vw] rounded-lg object-contain"
+        />
+      </span>
 
       {/* Gallery counter */}
       {isGallery && (
