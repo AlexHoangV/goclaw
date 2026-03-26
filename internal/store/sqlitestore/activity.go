@@ -28,10 +28,11 @@ func (s *SQLiteActivityStore) Log(ctx context.Context, entry *store.ActivityLog)
 	if tenantID == uuid.Nil {
 		tenantID = store.MasterTenantID
 	}
+	id := uuid.New()
 	_, err := s.db.ExecContext(ctx,
-		`INSERT INTO activity_logs (actor_type, actor_id, action, entity_type, entity_id, details, ip_address, tenant_id)
-		 VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
-		entry.ActorType, entry.ActorID, entry.Action,
+		`INSERT INTO activity_logs (id, actor_type, actor_id, action, entity_type, entity_id, details, ip_address, tenant_id)
+		 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+		id, entry.ActorType, entry.ActorID, entry.Action,
 		entry.EntityType, entry.EntityID, entry.Details, entry.IPAddress, tenantID,
 	)
 	return err

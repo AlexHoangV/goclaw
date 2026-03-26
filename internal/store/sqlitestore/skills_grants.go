@@ -4,7 +4,6 @@ package sqlitestore
 
 import (
 	"context"
-	"fmt"
 	"log/slog"
 	"time"
 
@@ -18,19 +17,6 @@ type SkillGrantInfo struct {
 	SkillID       uuid.UUID `json:"skill_id"`
 	PinnedVersion int       `json:"pinned_version"`
 	GrantedBy     string    `json:"granted_by"`
-}
-
-// SkillWithGrantStatus represents a skill with its grant status for a specific agent.
-type SkillWithGrantStatus struct {
-	ID          uuid.UUID `json:"id"`
-	Name        string    `json:"name"`
-	Slug        string    `json:"slug"`
-	Description string    `json:"description"`
-	Visibility  string    `json:"visibility"`
-	Version     int       `json:"version"`
-	Granted     bool      `json:"granted"`
-	PinnedVer   *int      `json:"pinned_version,omitempty"`
-	IsSystem    bool      `json:"is_system"`
 }
 
 // GrantToAgent grants a skill to an agent with version pinning.
@@ -204,14 +190,14 @@ func (s *SQLiteSkillStore) ListAccessible(ctx context.Context, agentID uuid.UUID
 }
 
 // ListWithGrantStatus returns all active skills with grant status for a specific agent.
-func (s *SQLiteSkillStore) ListWithGrantStatus(ctx context.Context, agentID uuid.UUID) ([]SkillWithGrantStatus, error) {
+func (s *SQLiteSkillStore) ListWithGrantStatus(ctx context.Context, agentID uuid.UUID) ([]store.SkillWithGrantStatus, error) {
 	tClause, tArgs, err := scopeClauseAlias(ctx, "s")
 	if err != nil {
 		return nil, err
 	}
 	tenantCond := ""
 	if len(tArgs) > 0 {
-		tenantCond = fmt.Sprintf(" AND (s.is_system = 1 OR s.tenant_id = ?)")
+		tenantCond = " AND (s.is_system = 1 OR s.tenant_id = ?)"
 	}
 	_ = tClause
 
@@ -234,9 +220,9 @@ func (s *SQLiteSkillStore) ListWithGrantStatus(ctx context.Context, agentID uuid
 	}
 	defer rows.Close()
 
-	var result []SkillWithGrantStatus
+	var result []store.SkillWithGrantStatus
 	for rows.Next() {
-		var r SkillWithGrantStatus
+		var r store.SkillWithGrantStatus
 		if err := rows.Scan(&r.ID, &r.Name, &r.Slug, &r.Description, &r.Visibility,
 			&r.Version, &r.Granted, &r.PinnedVer, &r.IsSystem); err != nil {
 			slog.Warn("skill_grants: scan error in ListWithGrantStatus", "error", err)

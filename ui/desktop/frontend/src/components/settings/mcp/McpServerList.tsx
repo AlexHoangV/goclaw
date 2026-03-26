@@ -118,7 +118,7 @@ export function McpServerList() {
                         ? 'bg-surface-tertiary text-text-secondary'
                         : 'border border-border text-text-muted'
                     }`}>
-                      {s.transport}
+                      {s.transport.toUpperCase()}
                     </span>
                   </td>
                   {/* Tools */}

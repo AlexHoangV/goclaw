@@ -1,4 +1,5 @@
-import { useState, useRef, useEffect, useCallback, type KeyboardEvent } from 'react'
+import { useState, useRef, useEffect, useCallback, useLayoutEffect, type KeyboardEvent } from 'react'
+import { createPortal } from 'react-dom'
 
 interface ComboboxOption {
   value: string
@@ -19,6 +20,7 @@ export function Combobox({ value, onChange, options, placeholder, loading, allow
   const [open, setOpen] = useState(false)
   const [search, setSearch] = useState('')
   const [highlightIdx, setHighlightIdx] = useState(-1)
+  const [pos, setPos] = useState<{ top: number; left: number; width: number }>({ top: 0, left: 0, width: 0 })
   const inputRef = useRef<HTMLInputElement>(null)
   const dropdownRef = useRef<HTMLDivElement>(null)
   const itemRefs = useRef<(HTMLButtonElement | null)[]>([])
@@ -30,20 +32,35 @@ export function Combobox({ value, onChange, options, placeholder, loading, allow
 
   const displayValue = options.find((o) => o.value === value)?.label || value
 
-  // Reset highlight when filtered list changes
   useEffect(() => { setHighlightIdx(-1) }, [search])
+
+  // Calculate dropdown position — track scroll/resize
+  useLayoutEffect(() => {
+    if (!open || !inputRef.current) return
+    const update = () => {
+      const rect = inputRef.current!.getBoundingClientRect()
+      setPos({ top: rect.bottom + 4, left: rect.left, width: rect.width })
+    }
+    update()
+    window.addEventListener('scroll', update, true)
+    window.addEventListener('resize', update)
+    return () => {
+      window.removeEventListener('scroll', update, true)
+      window.removeEventListener('resize', update)
+    }
+  }, [open])
 
   // Close on outside click
   useEffect(() => {
+    if (!open) return
     const handler = (e: MouseEvent) => {
-      if (dropdownRef.current && !dropdownRef.current.contains(e.target as Node) &&
-          inputRef.current && !inputRef.current.contains(e.target as Node)) {
-        setOpen(false)
-      }
+      if (dropdownRef.current?.contains(e.target as Node)) return
+      if (inputRef.current?.contains(e.target as Node)) return
+      setOpen(false)
     }
     document.addEventListener('mousedown', handler)
     return () => document.removeEventListener('mousedown', handler)
-  }, [])
+  }, [open])
 
   const handleSelect = useCallback((val: string) => {
     onChange(val)
@@ -104,10 +121,12 @@ export function Combobox({ value, onChange, options, placeholder, loading, allow
         <svg width="12" height="12" viewBox="0 0 12 12" fill="none"><path d="M3 4.5l3 3 3-3" stroke="currentColor" strokeWidth="1.5" strokeLinecap="round" /></svg>
       </div>
 
-      {open && filtered.length > 0 && (
+      {/* Portal dropdown — escapes overflow:hidden parents */}
+      {open && filtered.length > 0 && createPortal(
         <div
           ref={dropdownRef}
-          className="absolute z-50 top-full mt-1 w-full max-h-48 overflow-y-auto bg-surface-secondary border border-border rounded-lg shadow-lg py-1"
+          className="fixed z-[80] max-h-48 overflow-y-auto bg-surface-secondary border border-border rounded-lg shadow-lg py-1 pointer-events-auto"
+          style={{ top: pos.top, left: pos.left, width: pos.width }}
         >
           {filtered.map((o, idx) => (
             <button
@@ -124,7 +143,8 @@ export function Combobox({ value, onChange, options, placeholder, loading, allow
               {o.label}
             </button>
           ))}
-        </div>
+        </div>,
+        document.body,
       )}
     </div>
   )

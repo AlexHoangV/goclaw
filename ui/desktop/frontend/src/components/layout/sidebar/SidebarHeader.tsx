@@ -27,7 +27,7 @@ export function SidebarHeader() {
                   : 'text-text-secondary hover:bg-surface-tertiary hover:text-text-primary',
               ].join(' ')}
             >
-              <AgentAvatar name={agent.name} status={agent.status} size="sm" />
+              <AgentAvatar name={agent.name} status={agent.status} size="sm" emoji={agent.emoji} />
               <span className="truncate flex-1 text-xs font-medium">{agent.name}</span>
             </button>
           ))}

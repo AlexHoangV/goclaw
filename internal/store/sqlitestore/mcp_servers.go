@@ -104,15 +104,18 @@ func (s *SQLiteMCPServerStore) scanServer(row *sql.Row) (*store.MCPServerData, e
 	var srv store.MCPServerData
 	var displayName, command, url, apiKey, toolPrefix *string
 	var args, headers, env *[]byte
+	createdAt, updatedAt := scanTimePair()
 	err := row.Scan(
 		&srv.ID, &srv.Name, &displayName, &srv.Transport, &command,
 		&args, &url, &headers, &env,
 		&apiKey, &toolPrefix, &srv.TimeoutSec,
-		&srv.Settings, &srv.Enabled, &srv.CreatedBy, &srv.CreatedAt, &srv.UpdatedAt,
+		&srv.Settings, &srv.Enabled, &srv.CreatedBy, createdAt, updatedAt,
 	)
 	if err != nil {
 		return nil, err
 	}
+	srv.CreatedAt = createdAt.Time
+	srv.UpdatedAt = updatedAt.Time
 	srv.DisplayName = derefStr(displayName)
 	srv.Command = derefStr(command)
 	srv.URL = derefStr(url)
@@ -158,14 +161,17 @@ func (s *SQLiteMCPServerStore) ListServers(ctx context.Context) ([]store.MCPServ
 		var srv store.MCPServerData
 		var displayName, command, url, apiKey, toolPrefix *string
 		var args, headers, env *[]byte
+		createdAt, updatedAt := scanTimePair()
 		if err := rows.Scan(
 			&srv.ID, &srv.Name, &displayName, &srv.Transport, &command,
 			&args, &url, &headers, &env,
 			&apiKey, &toolPrefix, &srv.TimeoutSec,
-			&srv.Settings, &srv.Enabled, &srv.CreatedBy, &srv.CreatedAt, &srv.UpdatedAt,
+			&srv.Settings, &srv.Enabled, &srv.CreatedBy, createdAt, updatedAt,
 		); err != nil {
 			continue
 		}
+		srv.CreatedAt = createdAt.Time
+		srv.UpdatedAt = updatedAt.Time
 		srv.DisplayName = derefStr(displayName)
 		srv.Command = derefStr(command)
 		srv.URL = derefStr(url)

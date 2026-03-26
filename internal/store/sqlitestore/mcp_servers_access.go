@@ -66,10 +66,12 @@ func (s *SQLiteMCPServerStore) ListAgentGrants(ctx context.Context, agentID uuid
 	var result []store.MCPAgentGrant
 	for rows.Next() {
 		var g store.MCPAgentGrant
+		var createdAt sqliteTime
 		if err := rows.Scan(&g.ID, &g.ServerID, &g.AgentID, &g.Enabled,
-			&g.ToolAllow, &g.ToolDeny, &g.ConfigOverrides, &g.GrantedBy, &g.CreatedAt); err != nil {
+			&g.ToolAllow, &g.ToolDeny, &g.ConfigOverrides, &g.GrantedBy, &createdAt); err != nil {
 			continue
 		}
+		g.CreatedAt = createdAt.Time
 		result = append(result, g)
 	}
 	return result, rows.Err()
@@ -94,10 +96,12 @@ func (s *SQLiteMCPServerStore) ListServerGrants(ctx context.Context, serverID uu
 	result := make([]store.MCPAgentGrant, 0)
 	for rows.Next() {
 		var g store.MCPAgentGrant
+		var createdAt sqliteTime
 		if err := rows.Scan(&g.ID, &g.ServerID, &g.AgentID, &g.Enabled,
-			&g.ToolAllow, &g.ToolDeny, &g.ConfigOverrides, &g.GrantedBy, &g.CreatedAt); err != nil {
+			&g.ToolAllow, &g.ToolDeny, &g.ConfigOverrides, &g.GrantedBy, &createdAt); err != nil {
 			continue
 		}
+		g.CreatedAt = createdAt.Time
 		result = append(result, g)
 	}
 	return result, rows.Err()
@@ -196,15 +200,18 @@ func (s *SQLiteMCPServerStore) ListAccessible(ctx context.Context, agentID uuid.
 		var args, headers, env *[]byte
 		var toolAllowJSON, toolDenyJSON *[]byte
 
+		createdAt, updatedAt := scanTimePair()
 		if err := rows.Scan(
 			&srv.ID, &srv.Name, &displayName, &srv.Transport, &command,
 			&args, &url, &headers, &env,
 			&apiKey, &toolPrefix, &srv.TimeoutSec,
-			&srv.Settings, &srv.Enabled, &srv.CreatedBy, &srv.CreatedAt, &srv.UpdatedAt,
+			&srv.Settings, &srv.Enabled, &srv.CreatedBy, createdAt, updatedAt,
 			&toolAllowJSON, &toolDenyJSON,
 		); err != nil {
 			continue
 		}
+		srv.CreatedAt = createdAt.Time
+		srv.UpdatedAt = updatedAt.Time
 		srv.DisplayName = derefStr(displayName)
 		srv.Command = derefStr(command)
 		srv.URL = derefStr(url)
@@ -273,11 +280,16 @@ func (s *SQLiteMCPServerStore) ListPendingRequests(ctx context.Context) ([]store
 		var r store.MCPAccessRequest
 		var agentID *uuid.UUID
 		var userID, reviewedBy, reviewNote *string
+		var reviewedAtSt, createdAtSt sqliteTime
 		if err := rows.Scan(&r.ID, &r.ServerID, &agentID, &userID, &r.Scope, &r.Status,
 			&r.Reason, &r.ToolAllow, &r.RequestedBy,
-			&reviewedBy, &r.ReviewedAt, &reviewNote, &r.CreatedAt); err != nil {
+			&reviewedBy, &reviewedAtSt, &reviewNote, &createdAtSt); err != nil {
 			continue
 		}
+		if !reviewedAtSt.Time.IsZero() {
+			r.ReviewedAt = &reviewedAtSt.Time
+		}
+		r.CreatedAt = createdAtSt.Time
 		r.AgentID = agentID
 		r.UserID = derefStr(userID)
 		r.ReviewedBy = derefStr(reviewedBy)

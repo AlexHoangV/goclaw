@@ -208,7 +208,7 @@ func (s *SQLiteSkillStore) GetSkillOwnerIDBySlug(ctx context.Context, slug strin
 
 // UpsertSystemSkill creates or updates a system skill.
 // Returns (id, changed, actualFilePath, error).
-func (s *SQLiteSkillStore) UpsertSystemSkill(ctx context.Context, p SkillCreateParams) (uuid.UUID, bool, string, error) {
+func (s *SQLiteSkillStore) UpsertSystemSkill(ctx context.Context, p store.SkillCreateParams) (uuid.UUID, bool, string, error) {
 	var existingID uuid.UUID
 	var existingHash *string
 	var existingFilePath string

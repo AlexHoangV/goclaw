@@ -8,6 +8,7 @@ interface Agent {
   name: string
   model: string
   status: AgentStatus
+  emoji?: string
   busyDuration?: number // ms since busy started
 }
 

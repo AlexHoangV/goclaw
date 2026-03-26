@@ -12,21 +12,6 @@ import (
 	"github.com/nextlevelbuilder/goclaw/internal/store"
 )
 
-// SkillCreateParams holds parameters for creating a managed skill.
-type SkillCreateParams struct {
-	Name        string
-	Slug        string
-	Description *string
-	OwnerID     string
-	Visibility  string
-	Status      string
-	Version     int
-	FilePath    string
-	FileSize    int64
-	FileHash    *string
-	Frontmatter map[string]string
-}
-
 func (s *SQLiteSkillStore) CreateSkill(name, slug string, description *string, ownerID, visibility string, version int, filePath string, fileSize int64, fileHash *string) error {
 	id := store.GenNewID()
 	now := time.Now().UTC()
@@ -107,7 +92,7 @@ func (s *SQLiteSkillStore) DeleteSkill(ctx context.Context, id uuid.UUID) error 
 
 // CreateSkillManaged creates or updates a skill from upload parameters.
 // SQLite uses a serializable transaction to avoid the race on version calculation.
-func (s *SQLiteSkillStore) CreateSkillManaged(ctx context.Context, p SkillCreateParams) (uuid.UUID, error) {
+func (s *SQLiteSkillStore) CreateSkillManaged(ctx context.Context, p store.SkillCreateParams) (uuid.UUID, error) {
 	if err := store.ValidateUserID(p.OwnerID); err != nil {
 		return uuid.Nil, err
 	}
@@ -194,10 +179,16 @@ func (s *SQLiteSkillStore) GetSkillFilePath(ctx context.Context, id uuid.UUID) (
 	return filePath, slug, version, isSystem, err == nil
 }
 
-func (s *SQLiteSkillStore) GetNextVersion(slug string) int {
+func (s *SQLiteSkillStore) GetNextVersion(ctx context.Context, slug string) int {
 	var maxVersion int
-	s.db.QueryRow("SELECT COALESCE(MAX(version), 0) FROM skills WHERE slug = ?", slug).Scan(&maxVersion)
+	s.db.QueryRowContext(ctx, "SELECT COALESCE(MAX(version), 0) FROM skills WHERE slug = ?", slug).Scan(&maxVersion)
 	return maxVersion + 1
+}
+
+// GetNextVersionLocked returns the next version for a slug.
+// SQLite has no advisory locks; returns a no-op closer.
+func (s *SQLiteSkillStore) GetNextVersionLocked(ctx context.Context, slug string) (int, func() error, error) {
+	return s.GetNextVersion(ctx, slug), func() error { return nil }, nil
 }
 
 func (s *SQLiteSkillStore) ToggleSkill(ctx context.Context, id uuid.UUID, enabled bool) error {

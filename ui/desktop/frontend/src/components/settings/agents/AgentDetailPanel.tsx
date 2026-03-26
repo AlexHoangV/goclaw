@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react'
 import { PersonalitySection } from './PersonalitySection'
 import { ModelBudgetSection } from './ModelBudgetSection'
 import { EvolutionSection } from './EvolutionSection'
+import { AgentSkillsSection } from './AgentSkillsSection'
 import { AgentFilesTab } from './AgentFilesTab'
 import { ConfirmDialog } from '../../common/ConfirmDialog'
 import type { AgentData } from '../../../types/agent'
@@ -148,6 +149,8 @@ export function AgentDetailPanel({ agent, onSave, onResummon, onClose }: AgentDe
                 <EvolutionSection selfEvolve={selfEvolve} onSelfEvolveChange={setSelfEvolve} />
               </>
             )}
+            <hr className="border-border" />
+            <AgentSkillsSection agentId={agent.id} />
           </div>
         ) : (
           <div className="max-w-4xl mx-auto px-4 py-6">

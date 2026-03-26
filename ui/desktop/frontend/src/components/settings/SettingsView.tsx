@@ -5,6 +5,7 @@ import { AboutTab } from './AboutTab'
 import { ProviderList } from './providers/ProviderList'
 import { AgentList } from './agents/AgentList'
 import { McpServerList } from './mcp/McpServerList'
+import { SkillList } from './skills/SkillList'
 import { ToolList } from './tools/ToolList'
 
 export function SettingsView() {
@@ -49,6 +50,7 @@ function TabContent({ tab }: { tab: string }) {
     case 'providers': return <ProviderList />
     case 'agents': return <AgentList />
     case 'mcp': return <McpServerList />
+    case 'skills': return <SkillList />
     case 'tools': return <ToolList />
     case 'about': return <AboutTab />
     default:

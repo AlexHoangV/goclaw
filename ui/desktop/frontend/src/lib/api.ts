@@ -74,21 +74,29 @@ class ApiClient {
     return this.request<T>('DELETE', path)
   }
 
-  async uploadFile(path: string, file: File): Promise<{ url: string }> {
+  async uploadFile<T = { url: string }>(path: string, file: File): Promise<T> {
     const url = `${this.baseUrl}${path}`
     const form = new FormData()
     form.append('file', file)
 
     const res = await fetch(url, {
       method: 'POST',
-      headers: { Authorization: `Bearer ${this.token}` },
+      headers: {
+        Authorization: `Bearer ${this.token}`,
+        'X-GoClaw-User-Id': 'system',
+      },
       body: form,
     })
 
     if (!res.ok) {
-      throw new ApiError(`Upload failed: ${res.statusText}`, res.status)
+      let message = res.statusText
+      try {
+        const json = (await res.json()) as { error?: string | { message?: string } }
+        message = typeof json.error === 'string' ? json.error : json.error?.message ?? message
+      } catch { /* non-JSON */ }
+      throw new ApiError(message, res.status)
     }
-    return res.json() as Promise<{ url: string }>
+    return res.json() as Promise<T>
   }
 }
 
@@ -98,6 +106,11 @@ let apiClient: ApiClient | null = null
 export function getApiClient(): ApiClient {
   if (!apiClient) throw new Error('ApiClient not initialized — call initApiClient() first')
   return apiClient
+}
+
+/** Safe check — returns true if the API client has been initialized. */
+export function isApiClientReady(): boolean {
+  return apiClient !== null
 }
 
 export function initApiClient(baseUrl: string, token: string): ApiClient {

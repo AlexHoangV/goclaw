@@ -17,15 +17,20 @@ export function useAgents() {
         display_name?: string
         model?: string
         provider?: string
+        other_config?: Record<string, unknown> | null
       }> }>('/v1/agents')
 
-      const mapped: Agent[] = (result.agents ?? []).map((a) => ({
-        id: a.id,
-        key: a.agent_key,
-        name: a.display_name || a.agent_key,
-        model: a.model ?? 'unknown',
-        status: 'online' as const,
-      }))
+      const mapped: Agent[] = (result.agents ?? []).map((a) => {
+        const otherCfg = a.other_config ?? {}
+        return {
+          id: a.id,
+          key: a.agent_key,
+          name: a.display_name || a.agent_key,
+          model: a.model ?? 'unknown',
+          status: 'online' as const,
+          emoji: typeof otherCfg.emoji === 'string' ? otherCfg.emoji : undefined,
+        }
+      })
 
       setAgents(mapped)
       return mapped

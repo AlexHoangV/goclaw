@@ -46,7 +46,7 @@ export function McpFormDialog({ open, onOpenChange, server, onSubmit, onTest }: 
       setDisplayName(server.display_name || '')
       setTransport(server.transport)
       setCommand(server.command || '')
-      setArgs(server.args?.join(' ') ?? '')
+      setArgs(Array.isArray(server.args) ? server.args.join(' ') : '')
       setUrl(server.url || '')
       setHeaders(server.headers ?? {})
       setEnv(server.env ?? {})
@@ -186,7 +186,7 @@ export function McpFormDialog({ open, onOpenChange, server, onSubmit, onTest }: 
                       : 'border-border text-text-secondary hover:bg-surface-tertiary/30'
                   }`}
                 >
-                  {t}
+                  {t.toUpperCase()}
                 </button>
               ))}
             </div>
