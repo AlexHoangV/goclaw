@@ -9,12 +9,24 @@ interface MarkdownRendererProps {
   content: string
 }
 
+const LOCAL_FILE_EXT_RE = /\.(png|jpg|jpeg|gif|webp|svg|bmp|mp3|wav|ogg|flac|aac|m4a|mp4|webm|mkv|avi|mov|pdf|doc|docx|xls|xlsx|csv|txt|md|json|zip)$/i
+
+function isFileLink(href: string | undefined): boolean {
+  if (!href) return false
+  if (href.includes('/v1/files/')) return true
+  if ((href.startsWith('./') || href.startsWith('../')) && LOCAL_FILE_EXT_RE.test(href)) return true
+  return false
+}
+
 function resolveFileUrl(path: string): string {
   if (path.startsWith('http://') || path.startsWith('https://')) return path
+  // Convert relative/absolute path to /v1/files/{basename}
+  const basename = path.split('/').pop() ?? path
+  const filePath = path.includes('/v1/files/') ? path : `/v1/files/${basename}`
   if (isApiClientReady()) {
-    return getApiClient().getBaseUrl() + path
+    return getApiClient().getBaseUrl() + filePath
   }
-  return path
+  return filePath
 }
 
 export function MarkdownRenderer({ content }: MarkdownRendererProps) {
@@ -43,9 +55,9 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
         },
         p: ({ children }) => <p className="mb-3 last:mb-0">{children}</p>,
         a: ({ children, href }) => {
-          if (href?.includes('/v1/files/')) {
-            const filename = decodeURIComponent(href.split('/').pop() ?? 'file')
-            return <FileButton url={resolveFileUrl(href)} filename={filename} />
+          if (isFileLink(href)) {
+            const filename = decodeURIComponent(href!.split('/').pop() ?? 'file')
+            return <FileButton url={resolveFileUrl(href!)} filename={filename} />
           }
           return (
             <a href={href} className="text-accent hover:underline" target="_blank" rel="noopener noreferrer">
@@ -54,7 +66,7 @@ export function MarkdownRenderer({ content }: MarkdownRendererProps) {
           )
         },
         img: ({ src, alt }) => {
-          const resolvedSrc = src?.includes('/v1/files/') ? resolveFileUrl(src) : src
+          const resolvedSrc = isFileLink(src) ? resolveFileUrl(src!) : src
           const downloadUrl = resolvedSrc
             ? resolvedSrc.includes('?') ? `${resolvedSrc}&download=true` : `${resolvedSrc}?download=true`
             : undefined

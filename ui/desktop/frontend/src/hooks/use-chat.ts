@@ -1,9 +1,23 @@
 import { useEffect, useRef, useCallback } from 'react'
 import { getWsClient } from '../lib/ws'
-import { getApiClient } from '../lib/api'
+import { getApiClient, isApiClientReady } from '../lib/api'
 import { useChatStore } from '../stores/chat-store'
 import { useSessionStore } from '../stores/session-store'
 import type { AttachedFile } from '../components/chat/InputBar'
+
+// Convert any file path to /v1/files/{basename} URL for serving
+function toFileUrl(path: string): string {
+  if (!path) return ''
+  if (path.startsWith('/v1/files/') || path.includes('/v1/files/')) return resolveBase(path)
+  const basename = path.split('/').pop() ?? path
+  return resolveBase(`/v1/files/${basename}`)
+}
+
+function resolveBase(path: string): string {
+  if (path.startsWith('http')) return path
+  if (isApiClientReady()) return getApiClient().getBaseUrl() + path
+  return path
+}
 
 // RAF batching — prevents 100+ setState calls/sec during streaming
 function useStreamBatcher(onFlush: (text: string) => void) {
@@ -149,7 +163,8 @@ export function useChat() {
               inputTokens: usage.prompt_tokens ?? 0,
               outputTokens: usage.completion_tokens ?? 0,
             } : undefined,
-            p.media as { type: string; url: string }[] | undefined,
+            (p.media as { path?: string; content_type?: string; url?: string; type?: string }[] | undefined)
+              ?.map((m) => ({ type: m.content_type ?? m.type ?? 'file', url: toFileUrl(m.path ?? m.url ?? '') })),
           )
           currentRunIdRef.current = null
           break
@@ -315,7 +330,7 @@ export function useChat() {
               }),
               media: m.media_refs?.map((ref) => ({
                 type: ref.mime_type ?? ref.content_type ?? 'image',
-                url: ref.path ?? ref.url ?? '',
+                url: toFileUrl(ref.path ?? ref.url ?? ''),
               })),
             })),
           )
