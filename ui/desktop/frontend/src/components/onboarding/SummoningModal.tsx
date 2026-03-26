@@ -87,7 +87,7 @@ export function SummoningModal({ agentId, agentName, onContinue }: SummoningModa
   }
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/50 backdrop-blur-sm">
+    <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/50 backdrop-blur-sm">
       <div className="bg-surface-secondary border border-border rounded-2xl shadow-xl max-w-md w-full mx-4">
         {/* Header */}
         <div className="pt-6 pb-2 text-center">

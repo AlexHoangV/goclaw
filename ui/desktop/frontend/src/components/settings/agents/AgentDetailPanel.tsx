@@ -2,6 +2,7 @@ import { useState, useCallback } from 'react'
 import { PersonalitySection } from './PersonalitySection'
 import { ModelBudgetSection } from './ModelBudgetSection'
 import { EvolutionSection } from './EvolutionSection'
+import { ConfirmDialog } from '../../common/ConfirmDialog'
 import type { AgentData } from '../../../types/agent'
 
 interface AgentDetailPanelProps {
@@ -25,9 +26,12 @@ export function AgentDetailPanel({ agent, onSave, onResummon, onClose }: AgentDe
   const [selfEvolve, setSelfEvolve] = useState(!!(agent.other_config?.self_evolve))
   const [saveBlocked, setSaveBlocked] = useState(false)
   const [saving, setSaving] = useState(false)
+  const [saveError, setSaveError] = useState('')
+  const [confirmResummon, setConfirmResummon] = useState(false)
 
   const handleSave = useCallback(async () => {
     setSaving(true)
+    setSaveError('')
     try {
       const otherConfig: Record<string, unknown> = { ...agent.other_config }
       if (emoji) otherConfig.emoji = emoji
@@ -46,13 +50,14 @@ export function AgentDetailPanel({ agent, onSave, onResummon, onClose }: AgentDe
       })
       onClose()
     } catch (err) {
-      console.error('Failed to save agent:', err)
+      setSaveError(err instanceof Error ? err.message : 'Failed to save')
     } finally {
       setSaving(false)
     }
   }, [agent, emoji, displayName, description, selfEvolve, provider, model, contextWindow, maxToolIterations, isDefault, status, onSave, onClose])
 
-  const handleResummon = async () => {
+  const handleConfirmResummon = async () => {
+    setConfirmResummon(false)
     await onResummon(agent.id)
   }
 
@@ -60,7 +65,7 @@ export function AgentDetailPanel({ agent, onSave, onResummon, onClose }: AgentDe
 
   return (
     <div className="fixed inset-0 z-[60] flex flex-col bg-surface-primary">
-      {/* Header — sticky */}
+      {/* Header */}
       <div className="flex items-center gap-3 px-4 py-3 border-b border-border bg-surface-secondary shrink-0">
         <button onClick={onClose} className="p-1 rounded hover:bg-surface-tertiary transition-colors" title="Back">
           <svg className="w-5 h-5 text-text-muted" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth={2} strokeLinecap="round" strokeLinejoin="round">
@@ -80,18 +85,15 @@ export function AgentDetailPanel({ agent, onSave, onResummon, onClose }: AgentDe
             <span className="text-[10px] px-1.5 py-0.5 rounded bg-surface-tertiary text-text-muted">{agent.agent_type}</span>
           </div>
         </div>
-        {/* Resummon button */}
-        {(status === 'summon_failed' || status === 'active') && (
-          <button
-            onClick={handleResummon}
-            className="px-3 py-1.5 text-xs border border-border rounded-lg text-text-secondary hover:bg-surface-tertiary transition-colors"
-          >
-            Resummon
-          </button>
-        )}
+        <button
+          onClick={() => setConfirmResummon(true)}
+          className="px-3 py-1.5 text-xs border border-border rounded-lg text-text-secondary hover:bg-surface-tertiary transition-colors"
+        >
+          Resummon
+        </button>
       </div>
 
-      {/* Content — scrollable */}
+      {/* Content */}
       <div className="flex-1 overflow-y-auto overscroll-contain">
         <div className="max-w-2xl mx-auto px-4 py-6 space-y-6">
           <PersonalitySection
@@ -136,23 +138,37 @@ export function AgentDetailPanel({ agent, onSave, onResummon, onClose }: AgentDe
 
       {/* Sticky save bar */}
       <div className="shrink-0 border-t border-border bg-surface-secondary/80 backdrop-blur-sm px-4 py-3">
-        <div className="max-w-2xl mx-auto flex items-center justify-end gap-3">
-          <button
-            onClick={onClose}
-            className="px-4 py-2 text-xs border border-border rounded-lg text-text-secondary hover:bg-surface-tertiary transition-colors"
-          >
-            Cancel
-          </button>
-          <button
-            onClick={handleSave}
-            disabled={saving || saveBlocked}
-            className="px-5 py-2 text-xs bg-accent text-white rounded-lg font-medium hover:bg-accent-hover transition-colors disabled:opacity-50 flex items-center gap-2"
-          >
-            {saving && <span className="w-3 h-3 border-2 border-white border-t-transparent rounded-full animate-spin" />}
-            {saving ? 'Saving...' : 'Save Changes'}
-          </button>
+        <div className="max-w-2xl mx-auto flex items-center justify-between">
+          {saveError && <p className="text-xs text-error flex-1">{saveError}</p>}
+          <div className="flex items-center gap-3 ml-auto">
+            <button
+              onClick={onClose}
+              className="px-4 py-2 text-xs border border-border rounded-lg text-text-secondary hover:bg-surface-tertiary transition-colors"
+            >
+              Cancel
+            </button>
+            <button
+              onClick={handleSave}
+              disabled={saving || saveBlocked}
+              className="px-5 py-2 text-xs bg-accent text-white rounded-lg font-medium hover:bg-accent-hover transition-colors disabled:opacity-50 flex items-center gap-2"
+            >
+              {saving && <span className="w-3.5 h-3.5 border-2 border-white border-t-transparent rounded-full animate-spin" />}
+              {saving ? 'Saving...' : saveBlocked ? 'Verify model first' : 'Save Changes'}
+            </button>
+          </div>
         </div>
       </div>
+
+      {/* Resummon confirm */}
+      <ConfirmDialog
+        open={confirmResummon}
+        onOpenChange={setConfirmResummon}
+        title="Resummon agent?"
+        description="This will regenerate SOUL.md and IDENTITY.md. The agent's personality may change."
+        confirmLabel="Resummon"
+        variant="default"
+        onConfirm={handleConfirmResummon}
+      />
     </div>
   )
 }
