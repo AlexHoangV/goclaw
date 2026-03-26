@@ -25,8 +25,8 @@ export function EvolutionSection({ selfEvolve, onSelfEvolveChange }: EvolutionSe
       </div>
 
       {selfEvolve && (
-        <div className="rounded-lg border border-orange-200 bg-orange-50 p-3 dark:border-orange-800 dark:bg-orange-950/30">
-          <p className="text-[11px] text-orange-700 dark:text-orange-300">
+        <div className="rounded-lg border border-orange-500/20 bg-orange-500/5 p-3">
+          <p className="text-[11px] text-orange-600 dark:text-orange-400">
             When enabled, the agent will periodically update its IDENTITY.md to reflect learned preferences, communication style, and domain expertise from conversations.
           </p>
         </div>
