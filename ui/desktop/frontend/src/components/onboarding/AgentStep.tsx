@@ -32,37 +32,28 @@ function slugify(text: string): string {
 
 interface AgentStepProps extends StepProps {
   providerId: string | null
+  selectedModel?: string
   onAgentCreated: (agentName: string) => void
 }
 
-export function AgentStep({ onNext, onBack, providerId, onAgentCreated }: AgentStepProps) {
+export function AgentStep({ onNext, onBack, providerId, selectedModel, onAgentCreated }: AgentStepProps) {
   const [displayName, setDisplayName] = useState('')
   const [agentKey, setAgentKey] = useState('')
   const [keyEdited, setKeyEdited] = useState(false)
-  const [model, setModel] = useState('')
+  const [model] = useState(selectedModel || '')
   const [systemPrompt, setSystemPrompt] = useState('')
   const [providerName, setProviderName] = useState('')
-  const [models, setModels] = useState<string[]>([])
   const [creating, setCreating] = useState(false)
   const [error, setError] = useState('')
 
-  // Fetch provider name and models
+  // Fetch provider name
   useEffect(() => {
     if (!providerId) return
-    const api = getApiClient()
-    // Get provider details to get the name
-    api.get<{ name: string; provider_type: string }>(`/v1/providers/${providerId}`)
+    getApiClient()
+      .get<{ name: string }>(`/v1/providers/${providerId}`)
       .then((p) => setProviderName(p.name))
       .catch(() => {})
-    // Get available models
-    api.get<{ models: { id: string }[] }>(`/v1/providers/${providerId}/models`)
-      .then((res) => {
-        const ids = res.models.map((m) => m.id)
-        setModels(ids)
-        if (ids.length > 0 && !model) setModel(ids[0])
-      })
-      .catch(() => {})
-  }, [providerId, model])
+  }, [providerId])
 
   const applyTemplate = (t: Template) => {
     setDisplayName(t.name)
@@ -148,28 +139,12 @@ export function AgentStep({ onNext, onBack, providerId, onAgentCreated }: AgentS
         />
       </div>
 
-      {/* Model */}
+      {/* Model (selected in previous step) */}
       <div className="mb-4">
         <label className="block text-sm font-medium text-text-secondary mb-1.5">Model</label>
-        {models.length > 0 ? (
-          <select
-            value={model}
-            onChange={(e) => setModel(e.target.value)}
-            className="w-full bg-surface-tertiary border border-border rounded-lg px-3 py-2.5 text-base md:text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent"
-          >
-            {models.map((m) => (
-              <option key={m} value={m}>{m}</option>
-            ))}
-          </select>
-        ) : (
-          <input
-            type="text"
-            value={model}
-            onChange={(e) => setModel(e.target.value)}
-            placeholder="e.g. claude-sonnet-4-5"
-            className="w-full bg-surface-tertiary border border-border rounded-lg px-3 py-2.5 text-base md:text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent"
-          />
-        )}
+        <div className="w-full bg-surface-tertiary border border-border rounded-lg px-3 py-2.5 text-sm text-text-primary font-mono">
+          {model || 'Not selected'}
+        </div>
       </div>
 
       {/* System prompt */}
