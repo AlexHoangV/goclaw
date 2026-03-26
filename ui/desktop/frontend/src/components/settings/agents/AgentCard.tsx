@@ -47,20 +47,20 @@ export function AgentCard({ agent, onEdit, onDelete, onResummon }: AgentCardProp
             <div className="truncate text-xs text-text-muted">{agent.agent_key}</div>
           )}
         </div>
-        {/* Status badge */}
+        {/* Status badge — colors match web UI badge variants */}
         {isSummoning ? (
-          <span className="shrink-0 animate-pulse rounded-full border border-orange-400 px-2 py-0.5 text-[11px] text-orange-600 dark:text-orange-400">
+          <span className="shrink-0 animate-pulse rounded-full border border-orange-500/25 bg-orange-500/15 px-2 py-0.5 text-[11px] font-medium text-orange-700 dark:text-orange-400 dark:bg-orange-500/10 dark:border-orange-500/20">
             Summoning
           </span>
         ) : isFailed ? (
-          <span className="shrink-0 rounded-full bg-error/10 px-2 py-0.5 text-[11px] text-error font-medium">
+          <span className="shrink-0 rounded-full bg-error px-2 py-0.5 text-[11px] font-medium text-white dark:bg-error/60">
             Failed
           </span>
         ) : (
           <span className={`shrink-0 rounded-full px-2 py-0.5 text-[11px] font-medium ${
             agent.status === 'active'
-              ? 'bg-success/10 text-success'
-              : 'bg-surface-tertiary text-text-muted'
+              ? 'bg-emerald-500/15 text-emerald-700 border border-emerald-500/25 dark:text-emerald-400 dark:bg-emerald-500/10 dark:border-emerald-500/20'
+              : 'bg-surface-tertiary text-text-secondary'
           }`}>
             {agent.status}
           </span>
@@ -83,7 +83,7 @@ export function AgentCard({ agent, onEdit, onDelete, onResummon }: AgentCardProp
 
       {/* Bottom badges + actions */}
       <div className="flex items-center gap-1.5 flex-wrap">
-        <span className="rounded-full border border-border px-2 py-0.5 text-[11px] text-text-muted">
+        <span className="rounded-full border border-border px-2 py-0.5 text-[11px] text-text-primary">
           {agent.agent_type}
         </span>
         {agent.agent_type === 'predefined' && (
