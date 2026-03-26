@@ -6,6 +6,7 @@ import { getWsClient } from '../../../lib/ws'
 export function SidebarFooter() {
   const { createSession } = useSessions()
   const openSettings = useUiStore((s) => s.openSettings)
+  const closeSettings = useUiStore((s) => s.closeSettings)
   const toggleTheme = useUiStore((s) => s.toggleTheme)
   const theme = useUiStore((s) => s.theme)
 
@@ -23,7 +24,7 @@ export function SidebarFooter() {
   return (
     <div className="p-3 space-y-2">
       <button
-        onClick={createSession}
+        onClick={() => { createSession(); closeSettings() }}
         className="wails-no-drag w-full py-2 px-3 rounded-lg bg-accent text-white text-sm font-medium text-center hover:bg-accent-hover transition-colors"
       >
         + New Chat

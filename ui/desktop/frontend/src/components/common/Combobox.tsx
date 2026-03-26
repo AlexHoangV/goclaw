@@ -97,7 +97,7 @@ export function Combobox({ value, onChange, options, placeholder, loading, allow
         onKeyDown={handleKeyDown}
         placeholder={loading ? 'Loading...' : placeholder}
         disabled={disabled || loading}
-        className="w-full bg-surface-tertiary border border-border rounded-lg px-3 py-2.5 pr-8 text-base md:text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent"
+        className="w-full bg-surface-tertiary border border-border rounded-lg px-3 py-2.5 pr-8 text-base md:text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent"
       />
       {/* Dropdown chevron */}
       <div className="absolute right-3 top-1/2 -translate-y-1/2 pointer-events-none text-text-muted">

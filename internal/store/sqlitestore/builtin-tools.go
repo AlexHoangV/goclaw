@@ -173,14 +173,17 @@ func (s *SQLiteBuiltinToolStore) scanTool(row *sql.Row) (*store.BuiltinToolDef, 
 	var settings []byte
 	var requires []byte
 	var metadata []byte
+	createdAt, updatedAt := scanTimePair()
 
 	err := row.Scan(
 		&def.Name, &def.DisplayName, &def.Description, &def.Category,
-		&def.Enabled, &settings, &requires, &metadata, &def.CreatedAt, &def.UpdatedAt,
+		&def.Enabled, &settings, &requires, &metadata, createdAt, updatedAt,
 	)
 	if err != nil {
 		return nil, err
 	}
+	def.CreatedAt = createdAt.Time
+	def.UpdatedAt = updatedAt.Time
 
 	if settings != nil {
 		def.Settings = json.RawMessage(settings)
@@ -201,13 +204,16 @@ func (s *SQLiteBuiltinToolStore) scanTools(rows *sql.Rows) ([]store.BuiltinToolD
 		var settings []byte
 		var requires []byte
 		var metadata []byte
+		createdAt, updatedAt := scanTimePair()
 
 		if err := rows.Scan(
 			&def.Name, &def.DisplayName, &def.Description, &def.Category,
-			&def.Enabled, &settings, &requires, &metadata, &def.CreatedAt, &def.UpdatedAt,
+			&def.Enabled, &settings, &requires, &metadata, createdAt, updatedAt,
 		); err != nil {
 			continue
 		}
+		def.CreatedAt = createdAt.Time
+		def.UpdatedAt = updatedAt.Time
 
 		if settings != nil {
 			def.Settings = json.RawMessage(settings)

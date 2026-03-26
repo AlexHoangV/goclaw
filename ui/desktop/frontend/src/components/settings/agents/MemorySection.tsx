@@ -44,7 +44,7 @@ export function MemorySection({ config, onChange }: MemorySectionProps) {
             }}
             className="sr-only peer"
           />
-          <div className="w-9 h-5 bg-surface-tertiary peer-focus:ring-2 peer-focus:ring-accent rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-border after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-accent" />
+          <div className="w-9 h-5 bg-surface-tertiary peer-focus:ring-1 peer-focus:ring-accent rounded-full peer peer-checked:after:translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-border after:border after:rounded-full after:h-4 after:w-4 after:transition-all peer-checked:bg-accent" />
         </label>
       </div>
 
@@ -122,7 +122,7 @@ function NumberField({ label, hint, value, onChange, step }: {
         value={value}
         step={step}
         onChange={(e) => onChange(Number(e.target.value) || 0)}
-        className="w-full bg-surface-tertiary border border-border rounded-lg px-3 py-2 text-base md:text-sm text-text-primary focus:outline-none focus:ring-2 focus:ring-accent"
+        className="w-full bg-surface-tertiary border border-border rounded-lg px-3 py-2 text-base md:text-sm text-text-primary focus:outline-none focus:ring-1 focus:ring-accent"
       />
       <p className="text-[10px] text-text-muted">{hint}</p>
     </div>

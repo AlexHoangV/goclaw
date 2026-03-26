@@ -36,7 +36,7 @@ export function PersonalitySection({
             value={emoji}
             onChange={(e) => onEmojiChange(e.target.value.slice(0, 2))}
             maxLength={2}
-            className="w-12 h-12 rounded-xl bg-accent/10 border border-border text-2xl text-center focus:outline-none focus:ring-2 focus:ring-accent"
+            className="w-12 h-12 rounded-xl bg-accent/10 border border-border text-2xl text-center focus:outline-none focus:ring-1 focus:ring-accent"
           />
           <p className="text-[10px] text-text-muted">Icon</p>
         </div>
@@ -47,7 +47,7 @@ export function PersonalitySection({
               value={displayName}
               onChange={(e) => onDisplayNameChange(e.target.value)}
               placeholder="Agent name"
-              className="w-full bg-surface-tertiary border border-border rounded-lg px-3 py-2 text-base md:text-sm text-text-primary font-medium placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full bg-surface-tertiary border border-border rounded-lg px-3 py-2 text-base md:text-sm text-text-primary font-medium placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent"
             />
           </div>
           {/* Agent key (read-only) */}
@@ -68,7 +68,7 @@ export function PersonalitySection({
           onChange={(e) => onDescriptionChange(e.target.value)}
           placeholder={agentType === 'predefined' ? 'Describe personality...' : 'Describe expertise...'}
           rows={4}
-          className="w-full bg-surface-tertiary border border-border rounded-lg px-3 py-2 text-base md:text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent resize-none"
+          className="w-full bg-surface-tertiary border border-border rounded-lg px-3 py-2 text-base md:text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent resize-none"
         />
       </div>
 

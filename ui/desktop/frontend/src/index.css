@@ -8,8 +8,8 @@
   --color-surface-secondary: oklch(0.20 0.02 45);
   --color-surface-tertiary: oklch(0.25 0.02 45);
   --color-text-primary: oklch(0.94 0.01 80);
-  --color-text-secondary: oklch(0.62 0.02 50);
-  --color-text-muted: oklch(0.52 0.02 50);
+  --color-text-secondary: oklch(0.78 0.015 50);
+  --color-text-muted: oklch(0.65 0.015 50);
   --color-accent: oklch(0.68 0.18 38);
   --color-accent-hover: oklch(0.72 0.18 38);
   --color-border: oklch(0.30 0.02 45);
@@ -36,8 +36,8 @@
   --color-surface-secondary: oklch(1 0 0);
   --color-surface-tertiary: oklch(0.94 0.01 80);
   --color-text-primary: oklch(0.17 0.02 55);
-  --color-text-secondary: oklch(0.52 0.02 50);
-  --color-text-muted: oklch(0.62 0.02 50);
+  --color-text-secondary: oklch(0.35 0.02 50);
+  --color-text-muted: oklch(0.45 0.02 50);
   --color-accent: oklch(0.62 0.19 38);
   --color-accent-hover: oklch(0.58 0.19 38);
   --color-border: oklch(0.90 0.01 70);
@@ -54,8 +54,8 @@
   --color-surface-secondary: oklch(0.20 0.02 45);
   --color-surface-tertiary: oklch(0.25 0.02 45);
   --color-text-primary: oklch(0.94 0.01 80);
-  --color-text-secondary: oklch(0.62 0.02 50);
-  --color-text-muted: oklch(0.52 0.02 50);
+  --color-text-secondary: oklch(0.78 0.015 50);
+  --color-text-muted: oklch(0.65 0.015 50);
   --color-accent: oklch(0.68 0.18 38);
   --color-accent-hover: oklch(0.72 0.18 38);
   --color-border: oklch(0.30 0.02 45);

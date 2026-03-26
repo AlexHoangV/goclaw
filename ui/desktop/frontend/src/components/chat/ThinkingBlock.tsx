@@ -44,7 +44,7 @@ export function ThinkingBlock({ text, isStreaming }: ThinkingBlockProps) {
 
       {expanded && (
         <div className="px-3 pb-3">
-          <pre className="text-xs text-text-muted whitespace-pre-wrap leading-relaxed font-mono max-h-80 overflow-y-auto break-words">
+          <pre className="text-xs text-text-secondary whitespace-pre-wrap leading-relaxed font-mono max-h-80 overflow-y-auto break-words">
             {text}
             {isStreaming && (
               <span className="inline-block w-1.5 h-3.5 bg-text-muted/50 animate-pulse rounded-sm ml-0.5 align-text-bottom" />

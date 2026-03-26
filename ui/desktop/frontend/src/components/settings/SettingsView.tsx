@@ -4,6 +4,8 @@ import { AppearanceTab } from './AppearanceTab'
 import { AboutTab } from './AboutTab'
 import { ProviderList } from './providers/ProviderList'
 import { AgentList } from './agents/AgentList'
+import { McpServerList } from './mcp/McpServerList'
+import { ToolList } from './tools/ToolList'
 
 export function SettingsView() {
   const settingsTab = useUiStore((s) => s.settingsTab)
@@ -46,6 +48,8 @@ function TabContent({ tab }: { tab: string }) {
     case 'appearance': return <AppearanceTab />
     case 'providers': return <ProviderList />
     case 'agents': return <AgentList />
+    case 'mcp': return <McpServerList />
+    case 'tools': return <ToolList />
     case 'about': return <AboutTab />
     default:
       return (

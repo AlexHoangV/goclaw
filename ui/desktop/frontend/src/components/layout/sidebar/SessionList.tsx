@@ -1,5 +1,6 @@
 import { useMemo, useState } from 'react'
 import { useSessions } from '../../../hooks/use-sessions'
+import { useUiStore } from '../../../stores/ui-store'
 import { ConfirmDialog } from '../../common/ConfirmDialog'
 
 function groupByDate(sessions: Array<{ key: string; title: string; lastMessageAt: number }>) {
@@ -24,6 +25,7 @@ function groupByDate(sessions: Array<{ key: string; title: string; lastMessageAt
 
 export function SessionList() {
   const { sessions, activeSessionKey, setActiveSession, deleteSession } = useSessions()
+  const closeSettings = useUiStore((s) => s.closeSettings)
   const [confirmKey, setConfirmKey] = useState<string | null>(null)
 
   const groups = useMemo(() => groupByDate(sessions), [sessions])
@@ -65,7 +67,7 @@ export function SessionList() {
                   ].join(' ')}
                 >
                   <button
-                    onClick={() => setActiveSession(session.key)}
+                    onClick={() => { setActiveSession(session.key); closeSettings() }}
                     className={[
                       'flex-1 text-left px-2 py-1.5 text-xs truncate min-w-0',
                       activeSessionKey === session.key

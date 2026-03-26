@@ -192,7 +192,7 @@ export function AgentStep({ provider, model, onBack, onComplete }: AgentStepProp
           onChange={(e) => handleDescriptionChange(e.target.value)}
           placeholder="Describe your agent's personality..."
           rows={4}
-          className="w-full bg-surface-tertiary border border-border rounded-lg px-3 py-2.5 text-base md:text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent resize-none"
+          className="w-full bg-surface-tertiary border border-border rounded-lg px-3 py-2.5 text-base md:text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent resize-none"
         />
         <p className="text-xs text-text-muted">
           This shapes how your agent responds. You can change it later.

@@ -53,7 +53,7 @@ export function ConfirmDeleteDialog({
             onChange={(e) => setInputValue(e.target.value)}
             placeholder={confirmValue}
             autoFocus
-            className="w-full bg-surface-tertiary border border-border rounded-lg px-3 py-2 text-base md:text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent"
+            className="w-full bg-surface-tertiary border border-border rounded-lg px-3 py-2 text-base md:text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent"
           />
         </div>
         <div className="flex justify-end gap-2">

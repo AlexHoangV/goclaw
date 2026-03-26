@@ -105,7 +105,7 @@ export function ProviderStep({ existingProvider, onComplete }: ProviderStepProps
             type="text"
             value={name}
             onChange={(e) => setName(slugify(e.target.value))}
-            className="w-full bg-surface-tertiary border border-border rounded-lg px-3 py-2.5 text-base md:text-sm text-text-primary font-mono focus:outline-none focus:ring-2 focus:ring-accent"
+            className="w-full bg-surface-tertiary border border-border rounded-lg px-3 py-2.5 text-base md:text-sm text-text-primary font-mono focus:outline-none focus:ring-1 focus:ring-accent"
           />
         </div>
       </div>
@@ -119,7 +119,7 @@ export function ProviderStep({ existingProvider, onComplete }: ProviderStepProps
             value={apiKey}
             onChange={(e) => { setApiKey(e.target.value); setError('') }}
             placeholder="sk-..."
-            className="w-full bg-surface-tertiary border border-border rounded-lg px-3 py-2.5 text-base md:text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent"
+            className="w-full bg-surface-tertiary border border-border rounded-lg px-3 py-2.5 text-base md:text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent"
           />
         </div>
       )}
@@ -133,7 +133,7 @@ export function ProviderStep({ existingProvider, onComplete }: ProviderStepProps
             value={apiBase}
             onChange={(e) => setApiBase(e.target.value)}
             placeholder="https://api.example.com/v1"
-            className="w-full bg-surface-tertiary border border-border rounded-lg px-3 py-2.5 text-base md:text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent"
+            className="w-full bg-surface-tertiary border border-border rounded-lg px-3 py-2.5 text-base md:text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent"
           />
         </div>
       )}

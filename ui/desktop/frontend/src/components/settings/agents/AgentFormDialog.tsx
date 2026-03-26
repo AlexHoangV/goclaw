@@ -158,7 +158,7 @@ export function AgentFormDialog({ open, onOpenChange, agent, onSubmit }: AgentFo
               value={displayName}
               onChange={(e) => setDisplayName(e.target.value)}
               placeholder="Fox Spirit"
-              className="w-full bg-surface-tertiary border border-border rounded-lg px-3 py-2 text-base md:text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full bg-surface-tertiary border border-border rounded-lg px-3 py-2 text-base md:text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent"
             />
           </div>
           <div className="space-y-1 w-16">
@@ -167,7 +167,7 @@ export function AgentFormDialog({ open, onOpenChange, agent, onSubmit }: AgentFo
               value={emoji}
               onChange={(e) => setEmoji(e.target.value.slice(0, 2))}
               maxLength={2}
-              className="w-full bg-surface-tertiary border border-border rounded-lg px-3 py-2 text-base md:text-sm text-text-primary text-center focus:outline-none focus:ring-2 focus:ring-accent"
+              className="w-full bg-surface-tertiary border border-border rounded-lg px-3 py-2 text-base md:text-sm text-text-primary text-center focus:outline-none focus:ring-1 focus:ring-accent"
             />
           </div>
         </div>
@@ -238,7 +238,7 @@ export function AgentFormDialog({ open, onOpenChange, agent, onSubmit }: AgentFo
               onChange={(e) => setDescription(e.target.value)}
               placeholder="Describe your agent's personality..."
               rows={3}
-              className="w-full bg-surface-tertiary border border-border rounded-lg px-3 py-2 text-base md:text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent resize-none"
+              className="w-full bg-surface-tertiary border border-border rounded-lg px-3 py-2 text-base md:text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent resize-none"
             />
           </div>
         )}

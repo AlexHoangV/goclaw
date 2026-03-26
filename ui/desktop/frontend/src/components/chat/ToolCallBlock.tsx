@@ -52,7 +52,7 @@ function PhaseLabel({ state, isSkill }: { state: ToolCall['state']; isSkill: boo
   const label = isSkill
     ? { calling: 'Activating...', completed: 'Activated', error: 'Failed' }[state]
     : { calling: 'Running...', completed: 'Done', error: 'Failed' }[state]
-  const color = state === 'error' ? 'text-error' : 'text-blue-500'
+  const color = state === 'error' ? 'text-error' : state === 'completed' ? 'text-text-secondary' : 'text-blue-500'
   return <span className={`text-[11px] ${color}`}>{label}</span>
 }
 
@@ -81,7 +81,7 @@ export function ToolCallBlock({ toolCall, compact }: ToolCallBlockProps) {
       >
         <ToolIcon state={toolCall.state} isSkill={skill} />
         <span className="font-medium text-text-primary shrink-0">{displayName}</span>
-        {summary && <span className="truncate text-text-muted ml-1">{summary}</span>}
+        {summary && <span className="truncate text-text-secondary ml-1">{summary}</span>}
         <span className="ml-auto flex items-center gap-1 shrink-0">
           <PhaseLabel state={toolCall.state} isSkill={skill} />
           {canExpand && (

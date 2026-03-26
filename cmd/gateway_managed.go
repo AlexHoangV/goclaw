@@ -278,7 +278,7 @@ func wireExtras(
 				ms.SetMemoryStore(stores.Memory)
 			}
 		}
-		slog.Info("memory layering enabled (Postgres)")
+		slog.Info("memory layering enabled")
 	}
 
 	// Wire knowledge graph store on KG tool + hint in memory_search results

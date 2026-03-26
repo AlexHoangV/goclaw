@@ -146,7 +146,7 @@ export function ModelBudgetSection({
             value={contextWindow || ''}
             onChange={(e) => onContextWindowChange(Number(e.target.value) || 0)}
             placeholder="200000"
-            className="w-full bg-surface-tertiary border border-border rounded-lg px-3 py-2 text-base md:text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent"
+            className="w-full bg-surface-tertiary border border-border rounded-lg px-3 py-2 text-base md:text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent"
           />
           <p className="text-[10px] text-text-muted">Token limit for conversation context</p>
         </div>
@@ -157,7 +157,7 @@ export function ModelBudgetSection({
             value={maxToolIterations || ''}
             onChange={(e) => onMaxToolIterationsChange(Number(e.target.value) || 0)}
             placeholder="25"
-            className="w-full bg-surface-tertiary border border-border rounded-lg px-3 py-2 text-base md:text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent"
+            className="w-full bg-surface-tertiary border border-border rounded-lg px-3 py-2 text-base md:text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent"
           />
           <p className="text-[10px] text-text-muted">Max tool call rounds per turn</p>
         </div>

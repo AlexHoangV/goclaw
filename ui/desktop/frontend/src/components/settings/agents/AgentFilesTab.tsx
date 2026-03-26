@@ -227,7 +227,7 @@ function RegenerateDialog({ open, onOpenChange, onRegenerate }: {
           placeholder="e.g. Make the agent more formal and add expertise in data analysis..."
           rows={4}
           autoFocus
-          className="w-full bg-surface-tertiary border border-border rounded-lg px-3 py-2 text-base md:text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-2 focus:ring-accent resize-none"
+          className="w-full bg-surface-tertiary border border-border rounded-lg px-3 py-2 text-base md:text-sm text-text-primary placeholder:text-text-muted focus:outline-none focus:ring-1 focus:ring-accent resize-none"
         />
         <div className="flex justify-end gap-2">
           <button onClick={() => onOpenChange(false)} disabled={loading} className="px-3 py-1.5 text-xs border border-border rounded-lg text-text-secondary hover:bg-surface-tertiary transition-colors">
