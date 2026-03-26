@@ -156,7 +156,7 @@ export function AgentDetailPanel({ agent, onSave, onResummon, onClose }: AgentDe
           </div>
         ) : (
           <div className="max-w-4xl mx-auto px-4 py-6">
-            <AgentFilesTab agentKey={agent.agent_key} agentType={agent.agent_type} />
+            <AgentFilesTab agentId={agent.id} agentKey={agent.agent_key} agentType={agent.agent_type} />
           </div>
         )}
       </div>
