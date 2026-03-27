@@ -89,18 +89,15 @@ func (l *Loop) runLoop(ctx context.Context, req RunRequest) (*RunResult, error) 
 				imageFiles = append(imageFiles, bus.MediaFile{Path: ref.Path, MimeType: ref.MimeType})
 			}
 		}
-		if images := loadImages(imageFiles); len(images) > 0 {
-			if deferToReadImageTool {
-				// File-ref mode: DON'T store base64 in context.
-				// Images accessible via read_image(path=...) — paths enriched below.
-				slog.Info("vision: file-ref mode, images accessible via read_image tool",
-					"count", len(images), "agent", l.id)
-			} else {
-				// Inline mode: attach to message + context.
-				messages[len(messages)-1].Images = images
-				ctx = tools.WithMediaImages(ctx, images)
-				slog.Info("vision: attached images inline to main provider", "count", len(images), "agent", l.id)
-			}
+		if deferToReadImageTool {
+			// File-ref mode: skip base64 encoding entirely — images accessible via read_image(path=...).
+			slog.Info("vision: file-ref mode, images accessible via read_image tool",
+				"count", len(imageFiles), "agent", l.id)
+		} else if images := loadImages(imageFiles); len(images) > 0 {
+			// Inline mode: read files, base64 encode, attach to message + context.
+			messages[len(messages)-1].Images = images
+			ctx = tools.WithMediaImages(ctx, images)
+			slog.Info("vision: attached images inline to main provider", "count", len(images), "agent", l.id)
 		}
 	}
 
