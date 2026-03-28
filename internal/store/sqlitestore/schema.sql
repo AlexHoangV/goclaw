@@ -1305,3 +1305,17 @@ CREATE TABLE IF NOT EXISTS system_configs (
 );
 
 CREATE INDEX IF NOT EXISTS idx_system_configs_tenant ON system_configs(tenant_id);
+
+-- ============================================================
+-- Table: favorite_agents
+-- ============================================================
+
+CREATE TABLE IF NOT EXISTS favorite_agents (
+    user_id    VARCHAR(255) NOT NULL,
+    agent_id   TEXT NOT NULL REFERENCES agents(id) ON DELETE CASCADE,
+    tenant_id  TEXT NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+    created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+    PRIMARY KEY (user_id, agent_id, tenant_id)
+);
+
+CREATE INDEX IF NOT EXISTS idx_favorite_agents_user_tenant ON favorite_agents(user_id, tenant_id);

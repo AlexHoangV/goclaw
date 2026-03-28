@@ -479,6 +479,11 @@ func (s *Server) SetSystemConfigsHandler(h *httpapi.SystemConfigsHandler) {
 	s.handlers = append(s.handlers, h)
 }
 
+// SetFavoriteAgentsHandler sets the favorite agents handler.
+func (s *Server) SetFavoriteAgentsHandler(h *httpapi.FavoriteAgentsHandler) {
+	s.handlers = append(s.handlers, h)
+}
+
 // SetUsageHandler sets the usage analytics handler.
 func (s *Server) SetUsageHandler(h *httpapi.UsageHandler) { s.handlers = append(s.handlers, h) }
 

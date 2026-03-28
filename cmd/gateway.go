@@ -437,6 +437,11 @@ func runGateway() {
 		})
 	}
 
+	// Favorite agents API
+	if pgStores.FavoriteAgents != nil {
+		server.SetFavoriteAgentsHandler(httpapi.NewFavoriteAgentsHandler(pgStores.FavoriteAgents))
+	}
+
 	// Usage analytics API
 	if pgStores.Snapshots != nil {
 		server.SetUsageHandler(httpapi.NewUsageHandler(pgStores.Snapshots, pgStores.DB))

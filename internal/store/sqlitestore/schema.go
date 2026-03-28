@@ -14,7 +14,7 @@ var schemaSQL string
 
 // SchemaVersion is the current SQLite schema version.
 // Bump this when adding new migration steps below.
-const SchemaVersion = 1
+const SchemaVersion = 2
 
 // migrations maps version → SQL to apply when upgrading FROM that version.
 // schema.sql always represents the LATEST full schema (for fresh DBs).
@@ -28,7 +28,15 @@ const SchemaVersion = 1
 //
 // Then bump SchemaVersion to 2.
 var migrations = map[int]string{
-	// Version 1 is the initial schema — no patch needed (schema.sql covers it).
+	// Version 1 → 2: add favorite_agents table.
+	1: `CREATE TABLE IF NOT EXISTS favorite_agents (
+        user_id    VARCHAR(255) NOT NULL,
+        agent_id   TEXT NOT NULL REFERENCES agents(id) ON DELETE CASCADE,
+        tenant_id  TEXT NOT NULL REFERENCES tenants(id) ON DELETE CASCADE,
+        created_at TEXT NOT NULL DEFAULT (strftime('%Y-%m-%dT%H:%M:%fZ', 'now')),
+        PRIMARY KEY (user_id, agent_id, tenant_id)
+    );
+    CREATE INDEX IF NOT EXISTS idx_favorite_agents_user_tenant ON favorite_agents(user_id, tenant_id);`,
 }
 
 // EnsureSchema creates tables if they don't exist and applies incremental migrations.
