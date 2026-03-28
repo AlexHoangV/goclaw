@@ -439,7 +439,7 @@ func runGateway() {
 
 	// Favorite agents API
 	if pgStores.FavoriteAgents != nil {
-		server.SetFavoriteAgentsHandler(httpapi.NewFavoriteAgentsHandler(pgStores.FavoriteAgents))
+		server.SetFavoriteAgentsHandler(httpapi.NewFavoriteAgentsHandler(pgStores.FavoriteAgents, pgStores.Agents))
 	}
 
 	// Usage analytics API

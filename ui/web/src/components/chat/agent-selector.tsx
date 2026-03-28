@@ -16,6 +16,8 @@ export function AgentSelector({ value, onChange }: AgentSelectorProps) {
   const { t } = useTranslation("common");
   const http = useHttp();
   const connected = useAuthStore((s) => s.connected);
+  const userId = useAuthStore((s) => s.userId);
+  const isOwner = useAuthStore((s) => s.isOwner);
   const [agents, setAgents] = useState<AgentData[]>([]);
   const [favoriteIds, setFavoriteIds] = useState<Set<string>>(new Set());
   const [search, setSearch] = useState("");
@@ -99,16 +101,18 @@ export function AgentSelector({ value, onChange }: AgentSelectorProps) {
     });
   };
 
+  /** Whether current user can set default (owner of agent or tenant owner) */
+  const canSetDefault = (agent: AgentData) =>
+    isOwner || agent.owner_id === userId;
+
   const setDefaultAgent = (agent: AgentData, e: React.MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
-    if (agent.is_default) return;
-    // Optimistic update
+    if (agent.is_default || !canSetDefault(agent)) return;
     setAgents((prev) =>
       prev.map((a) => ({ ...a, is_default: a.id === agent.id })),
     );
     http.put(`/v1/agents/${agent.id}`, { is_default: true }).catch(() => {
-      // Revert on error — refetch
       http.get<{ agents: AgentData[] }>("/v1/agents").then((res) => {
         setAgents((res.agents ?? []).filter((a) => a.status === "active"));
       }).catch(() => {});
@@ -122,6 +126,7 @@ export function AgentSelector({ value, onChange }: AgentSelectorProps) {
   const renderRow = (agent: AgentData) => {
     const emoji = agentEmoji(agent);
     const isFav = favoriteIds.has(agent.id);
+    const showPin = canSetDefault(agent);
     return (
       <button
         key={agent.id}
@@ -137,24 +142,30 @@ export function AgentSelector({ value, onChange }: AgentSelectorProps) {
         ) : (
           <Bot className="h-3.5 w-3.5 shrink-0 text-muted-foreground" />
         )}
-        <span className="flex-1 truncate text-left text-[13px]">
+        <span className="flex-1 truncate text-left text-xs">
           {agent.display_name || agent.agent_key}
         </span>
-        {/* Default indicator / toggle */}
-        <span
-          role="button"
-          tabIndex={-1}
-          onClick={(e) => setDefaultAgent(agent, e)}
-          onMouseDown={(e) => e.preventDefault()}
-          title={agent.is_default ? t("defaultAgent") : t("setAsDefault")}
-          className={`shrink-0 p-0.5 rounded transition-colors duration-150 ${
-            agent.is_default
-              ? "text-blue-400"
-              : "text-transparent group-hover:text-muted-foreground/40 hover:!text-blue-400"
-          }`}
-        >
-          <Pin className="h-3 w-3" />
-        </span>
+        {/* Default indicator / toggle — only shown to owners */}
+        {showPin && (
+          <span
+            role="button"
+            tabIndex={-1}
+            onClick={(e) => setDefaultAgent(agent, e)}
+            onMouseDown={(e) => e.preventDefault()}
+            title={agent.is_default ? t("defaultAgent") : t("setAsDefault")}
+            className={`shrink-0 p-0.5 rounded transition-colors duration-150 ${
+              agent.is_default
+                ? "text-blue-400"
+                : "text-muted-foreground/0 group-hover:text-muted-foreground/40 hover:!text-blue-400 [@media(pointer:coarse)]:text-muted-foreground/20"
+            }`}
+          >
+            <Pin className="h-3 w-3" />
+          </span>
+        )}
+        {/* Default badge for non-owners */}
+        {!showPin && agent.is_default && (
+          <span className="text-xs text-muted-foreground">{t("default")}</span>
+        )}
         {/* Favorite star toggle */}
         <span
           role="button"
@@ -165,7 +176,7 @@ export function AgentSelector({ value, onChange }: AgentSelectorProps) {
           className={`shrink-0 p-0.5 rounded transition-colors duration-150 ${
             isFav
               ? "text-amber-400"
-              : "text-transparent group-hover:text-muted-foreground/40 hover:!text-amber-400"
+              : "text-muted-foreground/0 group-hover:text-muted-foreground/40 hover:!text-amber-400 [@media(pointer:coarse)]:text-muted-foreground/20"
           }`}
         >
           <Star className={`h-3 w-3 ${isFav ? "fill-amber-400" : ""}`} />
