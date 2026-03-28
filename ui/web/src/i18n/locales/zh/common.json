@@ -55,6 +55,8 @@
   "addFavorite": "添加到收藏",
   "removeFavorite": "取消收藏",
   "noResults": "无结果",
+  "defaultAgent": "默认代理",
+  "setAsDefault": "设为默认",
   "noDescription": "暂无描述",
   "noFiles": "未找到文件。",
   "noProvidersConfigured": "未配置Provider",

@@ -80,6 +80,8 @@
   "addFavorite": "Add to favorites",
   "removeFavorite": "Remove from favorites",
   "noResults": "No results",
+  "defaultAgent": "Default agent",
+  "setAsDefault": "Set as default",
   "sendMessage": "Send a message... (Shift+Enter for new line)",
   "stopGeneration": "Stop generation",
   "sendMessageTitle": "Send message",

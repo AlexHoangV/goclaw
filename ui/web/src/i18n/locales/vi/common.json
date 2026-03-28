@@ -55,6 +55,8 @@
   "addFavorite": "Thêm vào yêu thích",
   "removeFavorite": "Bỏ yêu thích",
   "noResults": "Không có kết quả",
+  "defaultAgent": "Agent mặc định",
+  "setAsDefault": "Đặt làm mặc định",
   "noDescription": "Không có mô tả",
   "noFiles": "Không tìm thấy tệp nào.",
   "noProvidersConfigured": "Chưa cấu hình provider",
